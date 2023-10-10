@@ -1,6 +1,6 @@
 ## Tweakfork-AFK-Fix
 
-This is a fork of Tweakfork (lol) that improves the AFK timeout functionality of Tweakfork. It now ignores inputs from **periodicAttackInterval**, allowing you to timeOut when using a mob farm, etc.
+This is a fork of Tweakfork (lol) that improves the AFK timeout functionality of Tweakfork. It also now ignores inputs from **periodicAttackInterval**, which is useful if you are using a mob farm and still want the AFK action to be performed.
 
 Tweakfork is a fork of Masa/Maruhon's mod [Tweakeroo](https://github.com/maruohon/tweakeroo). Its basically the same thing, except with some small changes to make life a little bit easier. 
 
