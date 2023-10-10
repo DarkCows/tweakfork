@@ -1,4 +1,7 @@
-## Tweakfork
+## Tweakfork-AFK-Fix
+
+This is a fork of Tweakfork (lol) that improves the AFK timeout functionality of Tweakfork. It now ignores inputs from **periodicAttackInterval**, allowing you to timeOut when using a mob farm, etc.
+
 Tweakfork is a fork of Masa/Maruhon's mod [Tweakeroo](https://github.com/maruohon/tweakeroo). Its basically the same thing, except with some small changes to make life a little bit easier. 
 
 1. Multi-layer block break restriction -> can prevent you from making potholes in the ground when speedmining
