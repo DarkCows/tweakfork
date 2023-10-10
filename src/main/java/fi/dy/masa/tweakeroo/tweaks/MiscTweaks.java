@@ -48,6 +48,8 @@ public class MiscTweaks
 
     private static int ticksSinceAfk = 0;
     private static boolean performedAfkAction = false;
+    
+    private static int AFKTime = -1;
 
     private static int potionWarningTimer;
 
@@ -117,6 +119,9 @@ public class MiscTweaks
 
     public static void resetAfkTimer() {
         if (!performedAfkAction || ticksSinceAfk > Configs.Generic.AFK_TIMEOUT.getIntegerValue() + 20*5) {
+        	if (FeatureToggle.TWEAK_PERIODIC_ATTACK.getBooleanValue() && Configs.Generic.PERIODIC_ATTACK_INTERVAL.getIntegerValue() == KEY_STATE_ATTACK.intervalCounter) {
+        		return;
+        	}
             ticksSinceAfk = 0;
             performedAfkAction = false;
         }
@@ -145,7 +150,6 @@ public class MiscTweaks
 
     private static void performAfkAction(MinecraftClient mc) {
         String action = Configs.Generic.AFK_ACTION.getStringValue();
-
         if (action.equals("/disconnect")) {
             disconnectGracefully(mc);
             return;
@@ -157,11 +161,16 @@ public class MiscTweaks
     private static void checkAfk(MinecraftClient mc) {
         ticksSinceAfk++;
         if (!performedAfkAction && FeatureToggle.TWEAK_AFK_TIMEOUT.getBooleanValue()) {
+        	if (AFKTime != Configs.Generic.AFK_TIMEOUT.getIntegerValue()) {
+        		AFKTime = Configs.Generic.AFK_TIMEOUT.getIntegerValue();
+        		ticksSinceAfk = 0;
+        	}
             int afkTimeout = Configs.Generic.AFK_TIMEOUT.getIntegerValue();
-            if (ticksSinceAfk > afkTimeout) {
+            
+            if (ticksSinceAfk > AFKTime) {
                 performAfkAction(mc);
                 performedAfkAction = true;
-            } else if (ticksSinceAfk > afkTimeout - 20*30) {
+            } else if (ticksSinceAfk > AFKTime - 20*30) {
                 InfoUtils.printActionbarMessage("tweakeroo.message.afk_detected", Math.ceil((double)(afkTimeout - ticksSinceAfk) / 2.0) / 10.0);
             }
         }
@@ -179,8 +188,8 @@ public class MiscTweaks
         }
 
         checkAfk(mc);
-
         doPeriodicClicks(mc);
+        
         doPotionWarnings(player);
 
         if (FeatureToggle.TWEAK_REPAIR_MODE.getBooleanValue())
@@ -200,7 +209,7 @@ public class MiscTweaks
         Tweakeroo.renderCountXPOrbs = 0;
     }
 
-    private static void doPeriodicClicks(MinecraftClient mc)
+    private static int doPeriodicClicks(MinecraftClient mc)
     {
         if (GuiUtils.getCurrentScreen() == null)
         {
@@ -225,6 +234,7 @@ public class MiscTweaks
             KEY_STATE_ATTACK.reset();
             KEY_STATE_USE.reset();
         }
+        return KEY_STATE_ATTACK.durationCounter;
     }
 
     private static void handlePeriodicClicks(
