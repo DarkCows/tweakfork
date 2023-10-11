@@ -184,13 +184,41 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     @Override
     public boolean onMouseScroll(int mouseX, int mouseY, double dWheel)
     {
-        // Not in a GUI
+    	MinecraftClient mc = MinecraftClient.getInstance();
+    	
+    	// Not in a GUI
         if (GuiUtils.getCurrentScreen() == null && dWheel != 0)
         {
             String preGreen = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;
+            
+            if (FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue())
+            {
+            	if (mc.world != null && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+                    BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
+                    BlockState state = mc.world.getBlockState(hit.getBlockPos());
+                    if (state.getBlock() instanceof NoteBlock) {
+                        int maxNote = 25;
+                        int offset = 0;
+                        if (dWheel > 0) {
+                            offset = maxNote - 1;
+                        } else if (dWheel < 0) {
+                            offset = 1;
+                        } else {
+                            return false;
+                        }
 
-            if (FeatureToggle.TWEAK_HOTBAR_SCROLL.getBooleanValue() && Hotkeys.HOTBAR_SCROLL.getKeybind().isKeybindHeld())
+                        for (int i = 0; i < offset; i++)
+                        {
+                            BlockHitResult context = new BlockHitResult(new Vec3d(hit.getBlockPos().getX(), hit.getBlockPos().getY(), hit.getBlockPos().getZ()),Direction.NORTH, hit.getBlockPos(), false);
+                            mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, context);
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            else if (FeatureToggle.TWEAK_HOTBAR_SCROLL.getBooleanValue() && Hotkeys.HOTBAR_SCROLL.getKeybind().isKeybindHeld())
             {
                 int currentRow = Configs.Internal.HOTBAR_SCROLL_CURRENT_ROW.getIntegerValue();
 
