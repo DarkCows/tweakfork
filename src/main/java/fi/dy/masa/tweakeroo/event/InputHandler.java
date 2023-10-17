@@ -18,6 +18,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.config.options.ConfigDouble;
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
 import fi.dy.masa.malilib.hotkeys.IKeybindManager;
 import fi.dy.masa.malilib.hotkeys.IKeybindProvider;
@@ -99,7 +100,10 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                     int currentNote = state.get(NoteBlock.NOTE);
                     int maxNote = 25;
                     int offset = 0;
-                    if (keyCode >= KeyCodes.KEY_0 && keyCode <= KeyCodes.KEY_9)
+                    if (Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() && Hotkeys.NOTE_PLAY_KEY.getKeybind().isModified()) {
+                    	offset = 25;
+                    }
+                    else if (keyCode >= KeyCodes.KEY_0 && keyCode <= KeyCodes.KEY_9)
                     {
                         offset = MathHelper.clamp(keyCode - KeyCodes.KEY_0, 0, 9);
                         if (offset == 0) {
@@ -192,7 +196,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
             String preGreen = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;
             
-            if (FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue())
+            if (FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_SCROLL.getBooleanValue())
             {
             	if (mc.world != null && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
                     BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
@@ -200,9 +204,9 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                     if (state.getBlock() instanceof NoteBlock) {
                         int maxNote = 25;
                         int offset = 0;
-                        if (dWheel > 0) {
+                        if (dWheel < 0) {
                             offset = maxNote - 1;
-                        } else if (dWheel < 0) {
+                        } else if (dWheel > 0) {
                             offset = 1;
                         } else {
                             return false;
