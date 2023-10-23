@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import fi.dy.masa.malilib.config.IConfigBoolean;
 import fi.dy.masa.malilib.config.options.ConfigBoolean;
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.hotkeys.IHotkeyCallback;
 import fi.dy.masa.malilib.hotkeys.IKeybind;
 import fi.dy.masa.malilib.hotkeys.KeyAction;
@@ -197,8 +198,6 @@ public class Callbacks
         {
             @SuppressWarnings("unchecked")
             IMixinSimpleOption<Double> opt = (IMixinSimpleOption<Double>) (Object) this.mc.options.getGamma();
-            //TODO: Possible solution to gamma override
-            opt.notify();
             opt.tweakeroo_setValueWithoutCheck(gamma);
         }
     }

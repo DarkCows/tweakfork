@@ -228,6 +228,7 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
     public void setValueChangeCallback(IValueChangeCallback<IConfigBoolean> callback)
     {
         this.callback = callback;
+        onValueChanged();
     }
 
     @Override
