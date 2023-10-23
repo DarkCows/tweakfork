@@ -118,7 +118,7 @@ public class MiscTweaks
     }
 
     public static void resetAfkTimer() {
-        if (!performedAfkAction || ticksSinceAfk > Configs.Generic.AFK_TIMEOUT.getIntegerValue() + 20*5) {
+        if (!performedAfkAction || ticksSinceAfk > Configs.Generic.AFK_TIMEOUT.getIntegerValue() + 20*5 && !Configs.Generic.AFK_IGNORE_INPUT.getBooleanValue()) {
         	if (FeatureToggle.TWEAK_PERIODIC_ATTACK.getBooleanValue() && Configs.Generic.PERIODIC_ATTACK_INTERVAL.getIntegerValue() == KEY_STATE_ATTACK.intervalCounter) {
         		return;
         	}

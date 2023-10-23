@@ -197,6 +197,8 @@ public class Callbacks
         {
             @SuppressWarnings("unchecked")
             IMixinSimpleOption<Double> opt = (IMixinSimpleOption<Double>) (Object) this.mc.options.getGamma();
+            //TODO: Possible solution to gamma override
+            opt.notify();
             opt.tweakeroo_setValueWithoutCheck(gamma);
         }
     }
