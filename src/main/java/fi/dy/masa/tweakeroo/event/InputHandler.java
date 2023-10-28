@@ -93,7 +93,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
         MiscUtils.checkZoomStatus();
 
         if (eventKeyState && FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue()) {
-            if (mc.world != null && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+            if (mc.world != null && !mc.player.isSneaking() && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
                 BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
                 BlockState state = mc.world.getBlockState(hit.getBlockPos());
                 if (state.getBlock() instanceof NoteBlock) {
@@ -153,7 +153,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
         MinecraftClient mc = MinecraftClient.getInstance();
 
         // Note block play key
-        if (GuiUtils.getCurrentScreen() == null && mc.player != null &&
+        if (GuiUtils.getCurrentScreen() == null && mc.player != null && !mc.player.isSneaking() &&
             eventButtonState && FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
             Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 && eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
             mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
