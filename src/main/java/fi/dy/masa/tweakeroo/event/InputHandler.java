@@ -93,7 +93,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
         MiscUtils.checkZoomStatus();
 
         if (eventKeyState && FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue()) {
-            if (mc.world != null && !mc.player.isSneaking() && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+            if (mc.world != null && mc.player != null && !mc.player.isSneaking() && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
                 BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
                 BlockState state = mc.world.getBlockState(hit.getBlockPos());
                 if (state.getBlock() instanceof NoteBlock) {
@@ -216,7 +216,8 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
             
             if (FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_SCROLL.getBooleanValue())
             {
-            	if (mc.world != null && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+            	if (mc.world != null && mc.player != null && !mc.player.isSneaking() &&
+            		mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
                     BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
                     BlockState state = mc.world.getBlockState(hit.getBlockPos());
                     if (state.getBlock() instanceof NoteBlock) {
