@@ -100,7 +100,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                     int currentNote = state.get(NoteBlock.NOTE);
                     int maxNote = 25;
                     int offset = 0;
-                    if (Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() && keyCode == Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0)) {
+                    if (Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() && Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 && keyCode == Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0)) {
                     	offset = 25;
                     }
                     else if (keyCode >= KeyCodes.KEY_0 && keyCode <= KeyCodes.KEY_9)
@@ -154,16 +154,13 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
 
         // Note block play key
         if (GuiUtils.getCurrentScreen() == null && mc.player != null &&
-            eventButtonState && eventButton == Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
-            FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
+            eventButtonState && FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
+            Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 && eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
             mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
         	BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
             BlockState state = mc.world.getBlockState(hit.getBlockPos());
         	if (state.getBlock() instanceof NoteBlock) {
-                int offset = 0;
-                if (Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() && eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0)) {
-                	offset = 25;
-                }
+                int offset = 25;
                 for (int i = 0; i < offset; i++)
                 {
                     BlockHitResult context = new BlockHitResult(new Vec3d(hit.getBlockPos().getX(), hit.getBlockPos().getY(), hit.getBlockPos().getZ()),Direction.NORTH, hit.getBlockPos(), false);
