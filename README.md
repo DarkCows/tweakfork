@@ -1,6 +1,26 @@
-## Tweakfork-AFK-Fix
+## Tweakfork-fork
+Fork of masa's tweakeroo that adds functionality
 
-This is a fork of Tweakfork (lol) that improves the AFK timeout functionality of Tweakfork. It also now ignores inputs from **periodicAttackInterval**, which is useful if you are using a mob farm and still want the AFK action to be performed.
+### Fixes/Changes:
+
+`tweakGammaOverride` -- now remains on after relogging<br/>
+`afkTimeout` -- now ignores inputs from periodicAttackInterval (useful if AFKing at a farm)<br/>
+`tweakNoteblockEdit` -- inputs disabled when you are sneaking (prevents unwanted blocks from being placed)<br/>
+
+### Additions:
+
+#### Generic
+`afkIgnoreInput` -- if true, afk timeout ignores all player input and the timer never resets.<br/>
+`noteblockScroll` -- use the scrollwheel to change noteblock pitch</p>
+`notePlayKey` -- play the current noteblock pitch using the key specified under `Hotkeys -> notePlayKey`<br/>
+
+#### Hotkeys:
+`notePlayKey` -- plays the current noteblock pitch if `Generic -> notePlayKey` is true<br/>
+
+<br/>
+<br/>
+
+_This project was forked from Andrews54757's tweakfork. Below is the original documentation for tweakfork:_
 
 Tweakfork is a fork of Masa/Maruhon's mod [Tweakeroo](https://github.com/maruohon/tweakeroo). Its basically the same thing, except with some small changes to make life a little bit easier. 
 
