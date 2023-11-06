@@ -141,7 +141,8 @@ public class RenderUtils
 
         HitResult trace = RayTraceUtils.getRayTraceFromEntity(world, cameraEntity, false);
 
-        if (trace.getType() == HitResult.Type.MISS)
+        // Fixed issue with trace (tweakfork issue #60)
+        if (trace == null || trace.getType() == HitResult.Type.MISS)
         {
             return;
         }
