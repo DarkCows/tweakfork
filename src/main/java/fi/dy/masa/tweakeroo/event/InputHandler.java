@@ -121,6 +121,9 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                         if (offset + currentNote >= 25) {
                             offset += 1;
                         }
+                        if (currentNote == 24) {
+                        	offset = 1;
+                        }
                     } else if (Configs.Generic.NOTE_EDIT_LETTERS.getBooleanValue() && keyCode >= KeyCodes.KEY_A && keyCode <= KeyCodes.KEY_G) {
                         int target = NOTEMAP[MathHelper.clamp(keyCode - KeyCodes.KEY_A, 0, 6)];
                         
