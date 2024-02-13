@@ -1,7 +1,7 @@
 package fi.dy.masa.tweakeroo.mixin;
 
+import net.minecraft.client.gui.screen.world.PresetsScreen;
 import org.spongepowered.asm.mixin.Mixin;
-import net.minecraft.client.gui.screen.PresetsScreen;
 
 @Mixin(PresetsScreen.class)
 public abstract class MixinPresetsScreen

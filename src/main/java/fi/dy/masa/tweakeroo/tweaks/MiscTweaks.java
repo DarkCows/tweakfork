@@ -129,7 +129,7 @@ public class MiscTweaks
 
     public static void disconnectGracefully(MinecraftClient mc) {
         boolean flag = mc.isInSingleplayer();
-        boolean flag1 = mc.isConnectedToRealms();
+        boolean flag1 = false; //TODO: Implement isConnectedToRealms()
         
         mc.world.disconnect();
         if (flag) {
