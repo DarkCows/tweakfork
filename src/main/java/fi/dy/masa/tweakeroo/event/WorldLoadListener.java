@@ -14,5 +14,8 @@ public class WorldLoadListener implements IWorldLoadListener
     {
         // Always disable the Free Camera mode when leaving the world or switching dimensions
         FeatureToggle.TWEAK_FREE_CAMERA.setBooleanValue(false);
+        
+        // Force gamma override to work if toggled on when world loads
+        FeatureToggle.TWEAK_GAMMA_OVERRIDE.onValueChanged();
     }
 }

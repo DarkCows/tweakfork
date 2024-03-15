@@ -59,6 +59,7 @@ public class Hotkeys
     public static final ConfigHotkey AREA_SELECTION_REMOVE_FROM_LIST    = new ConfigHotkey("areaSelectionRemoveFromList",       "",     KeybindSettings.PRESS_ALLOWEXTRA, "remove selected blocks from list");
     public static final ConfigHotkey OPEN_ITEM_LIST                     = new ConfigHotkey("openItemList",                      "",     "Opens the item list gui");
     public static final ConfigHotkey CONTAINER_SCANNER_CLEAR_CACHE      = new ConfigHotkey("containerScannerClearCache",        "",     "Clears the container scanner cache");
+    public static final ConfigHotkey NOTE_PLAY_KEY                      = new ConfigHotkey("notePlayKey",                       "",     "Plays current noteblock note");
    
 
     public static final List<ConfigHotkey> HOTKEY_LIST = ImmutableList.of(
@@ -111,7 +112,7 @@ public class Hotkeys
             AREA_SELECTION_REMOVE_FROM_LIST,
             OPEN_ITEM_LIST,
             CONTAINER_SCANNER_CLEAR_CACHE,
-
+            NOTE_PLAY_KEY,
             WRITE_MAPS_AS_IMAGES,
             ZOOM_ACTIVATE
     );

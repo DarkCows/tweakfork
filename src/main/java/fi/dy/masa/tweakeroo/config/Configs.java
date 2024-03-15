@@ -127,7 +127,11 @@ public class Configs implements IConfigHandler
         public static final ConfigInteger       CONTAINER_SCAN_MIN_TYPES            = new ConfigInteger     ("containerScanMinTypes", 1, 1, 100000, "Minimum item types a container needs to have to be displayed");
         public static final ConfigInteger       AFK_TIMEOUT                         = new ConfigInteger     ("afkTimeout", 2400, 200, 200000, "Number of ticks for AFK timeout");
         public static final ConfigString        AFK_ACTION                          = new ConfigString      ("afkAction", "/disconnect", "The action to perform on AFK timeout. /disconnect is default.");
+        public static final ConfigBoolean       AFK_IGNORE_INPUT                    = new ConfigBoolean     ("afkIgnoreInput", false, "If enabled, the AFK timeout will not be reset by player inputs");
+        public static final ConfigBoolean       NOTE_SCROLL                         = new ConfigBoolean     ("noteblockScroll", true, "If enabled, then you can change the note of the noteblock using the scrollwheel.");
         public static final ConfigBoolean       NOTE_EDIT_LETTERS                   = new ConfigBoolean     ("noteEditLetters", false, "When enabled, can use letter keys to set noteblock notes");
+        public static final ConfigBoolean       NOTE_PLAY_KEY                       = new ConfigBoolean     ("notePlayKey", false, "When enabled, use key specified in Hotkeys -> notePlayKey to play current noteblock note");
+        
        
 
 
@@ -220,8 +224,11 @@ public class Configs implements IConfigHandler
                 CONTAINER_SCAN_MIN_TYPES,
                 AFK_TIMEOUT,
                 AFK_ACTION,
+                AFK_IGNORE_INPUT,
                 TOOL_SWITCHABLE_SLOTS,
+                NOTE_SCROLL,
                 NOTE_EDIT_LETTERS,
+                NOTE_PLAY_KEY,
                 TOOL_SWITCH_IGNORED_SLOTS,
                 ZOOM_FOV
         );

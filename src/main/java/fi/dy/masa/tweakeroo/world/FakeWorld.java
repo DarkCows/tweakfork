@@ -43,6 +43,7 @@ import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.event.GameEvent.Emitter;
 import net.minecraft.world.tick.QueryableTickScheduler;
+import net.minecraft.world.tick.TickManager;
 
 public class FakeWorld extends World
 {
@@ -291,6 +292,11 @@ public class FakeWorld extends World
     @Override
     public Entity getEntityById(int var1) {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public TickManager getTickManager() {
         return null;
     }
 

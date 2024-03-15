@@ -1,4 +1,27 @@
-## Tweakfork
+## Tweakfork-fork
+Fork of masa's tweakeroo that adds functionality
+
+### Fixes/Changes:
+
+`tweakGammaOverride` -- now remains on after relogging<br/>
+`afkTimeout` -- now ignores inputs from periodicAttackInterval (useful if AFKing at a farm)<br/>
+`tweakNoteblockEdit` -- inputs disabled when you are sneaking (prevents unwanted blocks from being placed)<br/>
+
+### Additions:
+
+#### Generic
+`afkIgnoreInput` -- if true, afk timeout ignores all player input and the timer never resets.<br/>
+`noteblockScroll` -- use the scrollwheel to change noteblock pitch</p>
+`notePlayKey` -- play the current noteblock pitch using the key specified under `Hotkeys -> notePlayKey`<br/>
+
+#### Hotkeys:
+`notePlayKey` -- plays the current noteblock pitch if `Generic -> notePlayKey` is true<br/>
+
+<br/>
+<br/>
+
+_This project was forked from Andrews54757's tweakfork. Below is the original documentation for tweakfork:_
+
 Tweakfork is a fork of Masa/Maruhon's mod [Tweakeroo](https://github.com/maruohon/tweakeroo). Its basically the same thing, except with some small changes to make life a little bit easier. 
 
 1. Multi-layer block break restriction -> can prevent you from making potholes in the ground when speedmining

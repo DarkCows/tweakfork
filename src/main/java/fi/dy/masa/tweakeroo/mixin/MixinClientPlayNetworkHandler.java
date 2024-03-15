@@ -1,5 +1,11 @@
 package fi.dy.masa.tweakeroo.mixin;
 
+import net.minecraft.client.network.ClientCommonNetworkHandler;
+import net.minecraft.client.network.ClientConnectionState;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.packet.c2s.common.CommonPongC2SPacket;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
+import net.minecraft.network.packet.c2s.common.KeepAliveC2SPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,9 +26,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
-import net.minecraft.network.packet.c2s.play.KeepAliveC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayPongC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.BlockEventS2CPacket;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
@@ -41,7 +44,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import fi.dy.masa.tweakeroo.util.MiscUtils;
 
 @Mixin(ClientPlayNetworkHandler.class)
-public abstract class MixinClientPlayNetworkHandler
+public abstract class MixinClientPlayNetworkHandler extends ClientCommonNetworkHandler
 {
     @Shadow
     private ClientWorld world;
@@ -49,8 +52,12 @@ public abstract class MixinClientPlayNetworkHandler
     @Shadow
     private int chunkLoadDistance;
 
+    protected MixinClientPlayNetworkHandler(MinecraftClient client, ClientConnection connection, ClientConnectionState connectionState) {
+        super(client, connection, connectionState);
+    }
+
     @Shadow
-    public abstract DynamicRegistryManager getRegistryManager();
+    public abstract DynamicRegistryManager.Immutable getRegistryManager();
 
     @Inject(method = "onOpenScreen", at = @At("HEAD"), cancellable = true)
     private void onOpenScreenListener(OpenScreenS2CPacket packet, CallbackInfo ci) {
@@ -72,7 +79,7 @@ public abstract class MixinClientPlayNetworkHandler
             cancellable = true)
     private void onHandleSetSlot(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci)
     {
-        if (PlacementTweaks.shouldSkipSlotSync(packet.getSlot(), packet.getItemStack()))
+        if (PlacementTweaks.shouldSkipSlotSync(packet.getSlot(), packet.getStack()))
         {
             ci.cancel();
         }
@@ -113,7 +120,7 @@ public abstract class MixinClientPlayNetworkHandler
 
     @Inject(method = "sendPacket", at = @At("HEAD"))
     private void onSendPacket(Packet<?> packet, CallbackInfo ci) {
-        if (!((packet instanceof PlayerMoveC2SPacket) || (packet instanceof PlayPongC2SPacket) || (packet instanceof KeepAliveC2SPacket) || (packet instanceof CustomPayloadC2SPacket))) {
+        if (!((packet instanceof PlayerMoveC2SPacket) || (packet instanceof CommonPongC2SPacket) || (packet instanceof KeepAliveC2SPacket) || (packet instanceof CustomPayloadC2SPacket))) {
             MiscTweaks.resetAfkTimer();
         }
     }
@@ -134,8 +141,8 @@ public abstract class MixinClientPlayNetworkHandler
 
     @Inject(method = "onChunkData", at=@At("RETURN"))
     private void onChunkDataInject(ChunkDataS2CPacket packet, CallbackInfo ci) {
-        int cx = packet.getX();
-		int cz = packet.getZ();
+        int cx = packet.getChunkX();
+		int cz = packet.getChunkZ();
         RenderTweaks.loadFakeChunk(cx, cz);
 
         if (!FeatureToggle.TWEAK_SELECTIVE_BLOCKS_RENDERING.getBooleanValue()) {
@@ -171,8 +178,8 @@ public abstract class MixinClientPlayNetworkHandler
 
     @Inject(method = "onUnloadChunk",at=@At("RETURN"))
     private void onUnloadChunkInject(UnloadChunkS2CPacket packet, CallbackInfo ci) {
-        int i = packet.getX();
-		int j = packet.getZ();
+        int i = packet.pos().x;
+		int j = packet.pos().z;
         RenderTweaks.unloadFakeChunk(i,j);
     }
     

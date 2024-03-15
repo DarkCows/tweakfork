@@ -18,6 +18,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.config.options.ConfigDouble;
 import fi.dy.masa.malilib.gui.GuiBase;
+import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
 import fi.dy.masa.malilib.hotkeys.IKeybindManager;
 import fi.dy.masa.malilib.hotkeys.IKeybindProvider;
@@ -92,14 +93,17 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
         MiscUtils.checkZoomStatus();
 
         if (eventKeyState && FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue()) {
-            if (mc.world != null && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+            if (mc.world != null && mc.player != null && !mc.player.isSneaking() && mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
                 BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
                 BlockState state = mc.world.getBlockState(hit.getBlockPos());
                 if (state.getBlock() instanceof NoteBlock) {
                     int currentNote = state.get(NoteBlock.NOTE);
                     int maxNote = 25;
                     int offset = 0;
-                    if (keyCode >= KeyCodes.KEY_0 && keyCode <= KeyCodes.KEY_9)
+                    if (Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() && Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 && keyCode == Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0)) {
+                    	offset = 25;
+                    }
+                    else if (keyCode >= KeyCodes.KEY_0 && keyCode <= KeyCodes.KEY_9)
                     {
                         offset = MathHelper.clamp(keyCode - KeyCodes.KEY_0, 0, 9);
                         if (offset == 0) {
@@ -116,6 +120,9 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                         offset = 12;
                         if (offset + currentNote >= 25) {
                             offset += 1;
+                        }
+                        if (currentNote == 24) {
+                        	offset = 1;
                         }
                     } else if (Configs.Generic.NOTE_EDIT_LETTERS.getBooleanValue() && keyCode >= KeyCodes.KEY_A && keyCode <= KeyCodes.KEY_G) {
                         int target = NOTEMAP[MathHelper.clamp(keyCode - KeyCodes.KEY_A, 0, 6)];
@@ -148,6 +155,24 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     {
         MinecraftClient mc = MinecraftClient.getInstance();
 
+        // Note block play key
+        if (GuiUtils.getCurrentScreen() == null && mc.player != null && !mc.player.isSneaking() &&
+            eventButtonState && FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
+            Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 && eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
+            mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+        	BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
+            BlockState state = mc.world.getBlockState(hit.getBlockPos());
+        	if (state.getBlock() instanceof NoteBlock) {
+                int offset = 25;
+                for (int i = 0; i < offset; i++)
+                {
+                    BlockHitResult context = new BlockHitResult(new Vec3d(hit.getBlockPos().getX(), hit.getBlockPos().getY(), hit.getBlockPos().getZ()),Direction.NORTH, hit.getBlockPos(), false);
+                    mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, context);
+                }
+        	}
+        }
+        
+        // Angel Block
         if (GuiUtils.getCurrentScreen() == null && mc.player != null && mc.player.isCreative() &&
             eventButtonState && mc.options.useKey.matchesMouse(eventButton) &&
             FeatureToggle.TWEAK_ANGEL_BLOCK.getBooleanValue() &&
@@ -184,13 +209,42 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     @Override
     public boolean onMouseScroll(int mouseX, int mouseY, double dWheel)
     {
-        // Not in a GUI
+    	MinecraftClient mc = MinecraftClient.getInstance();
+    	
+    	// Not in a GUI
         if (GuiUtils.getCurrentScreen() == null && dWheel != 0)
         {
             String preGreen = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;
+            
+            if (FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_SCROLL.getBooleanValue())
+            {
+            	if (mc.world != null && mc.player != null && !mc.player.isSneaking() &&
+            		mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+                    BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
+                    BlockState state = mc.world.getBlockState(hit.getBlockPos());
+                    if (state.getBlock() instanceof NoteBlock) {
+                        int maxNote = 25;
+                        int offset = 0;
+                        if (dWheel < 0) {
+                            offset = maxNote - 1;
+                        } else if (dWheel > 0) {
+                            offset = 1;
+                        } else {
+                            return false;
+                        }
 
-            if (FeatureToggle.TWEAK_HOTBAR_SCROLL.getBooleanValue() && Hotkeys.HOTBAR_SCROLL.getKeybind().isKeybindHeld())
+                        for (int i = 0; i < offset; i++)
+                        {
+                            BlockHitResult context = new BlockHitResult(new Vec3d(hit.getBlockPos().getX(), hit.getBlockPos().getY(), hit.getBlockPos().getZ()),Direction.NORTH, hit.getBlockPos(), false);
+                            mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, context);
+                        }
+                        return true;
+                    }
+                }
+            }
+
+            else if (FeatureToggle.TWEAK_HOTBAR_SCROLL.getBooleanValue() && Hotkeys.HOTBAR_SCROLL.getKeybind().isKeybindHeld())
             {
                 int currentRow = Configs.Internal.HOTBAR_SCROLL_CURRENT_ROW.getIntegerValue();
 
