@@ -1,27 +1,4 @@
-## Tweakfork-fork
-Fork of masa's tweakeroo that adds functionality
-
-### Fixes/Changes:
-
-`tweakGammaOverride` -- now remains on after relogging<br/>
-`afkTimeout` -- now ignores inputs from periodicAttackInterval (useful if AFKing at a farm)<br/>
-`tweakNoteblockEdit` -- inputs disabled when you are sneaking (prevents unwanted blocks from being placed)<br/>
-
-### Additions:
-
-#### Generic
-`afkIgnoreInput` -- if true, afk timeout ignores all player input and the timer never resets.<br/>
-`noteblockScroll` -- use the scrollwheel to change noteblock pitch</p>
-`notePlayKey` -- play the current noteblock pitch using the key specified under `Hotkeys -> notePlayKey`<br/>
-
-#### Hotkeys:
-`notePlayKey` -- plays the current noteblock pitch if `Generic -> notePlayKey` is true<br/>
-
-<br/>
-<br/>
-
-_This project was forked from Andrews54757's tweakfork. Below is the original documentation for tweakfork:_
-
+## Tweakfork
 Tweakfork is a fork of Masa/Maruhon's mod [Tweakeroo](https://github.com/maruohon/tweakeroo). Its basically the same thing, except with some small changes to make life a little bit easier. 
 
 1. Multi-layer block break restriction -> can prevent you from making potholes in the ground when speedmining
@@ -61,6 +38,10 @@ Tweakfork is a fork of Masa/Maruhon's mod [Tweakeroo](https://github.com/maruoho
     * While looking at noteblock, press number keys to add the amount of notes. eg, for high F note 23, press 1 two times then press 3 (1 = 10, 0 = reset)
     * Use plus key to add 1, minus key to subtract 1. 
     * Press letter keys A-G to set notes by letter name (only when Configs.Generic.noteEditLetters is set to true). Use Tab to toggle octave.
+22. afkIgnoreInput -> if true, afk timeout ignores all player input and the timer never resets.
+23. noteblockScroll -> use the scrollwheel to change noteblock pitch<
+34. notePlayKey -> play the current noteblock pitch using the key specified under `Hotkeys -> notePlayKey`
+
 
 *Using Selectively Visible Blocks for the [brewer](https://www.youtube.com/watch?v=1_jSkyq-WOs) video*
 <img width="1280" alt="Screen Shot 2021-02-16 at 2 01 08 PM" src="https://user-images.githubusercontent.com/13282284/108109105-7742c280-705f-11eb-81cf-b5341ca740c3.png">
