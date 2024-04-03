@@ -1,3 +1,5 @@
+## NOTE: This has been merged into the original tweakfork mod; this repo will no longer be updated.
+
 ## Tweakfork-fork
 Fork of masa's tweakeroo that adds functionality
 
