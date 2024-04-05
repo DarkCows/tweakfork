@@ -48,7 +48,8 @@ public class MiscTweaks
 
     private static int ticksSinceAfk = 0;
     private static boolean performedAfkAction = false;
-    
+    private static double pitch = 0;
+    private static double yaw = 0;
     private static int AFKTime = -1;
 
     private static int potionWarningTimer;
@@ -159,20 +160,27 @@ public class MiscTweaks
     }
 
     private static void checkAfk(MinecraftClient mc) {
-        ticksSinceAfk++;
-        if (!performedAfkAction && FeatureToggle.TWEAK_AFK_TIMEOUT.getBooleanValue()) {
-        	if (AFKTime != Configs.Generic.AFK_TIMEOUT.getIntegerValue()) {
-        		AFKTime = Configs.Generic.AFK_TIMEOUT.getIntegerValue();
-        		ticksSinceAfk = 0;
-        	}
-            int afkTimeout = Configs.Generic.AFK_TIMEOUT.getIntegerValue();
-            
-            if (ticksSinceAfk > AFKTime) {
-                performAfkAction(mc);
-                performedAfkAction = true;
-            } else if (ticksSinceAfk > AFKTime - 20*30) {
-                InfoUtils.printActionbarMessage("tweakeroo.message.afk_detected", Math.ceil((double)(afkTimeout - ticksSinceAfk) / 2.0) / 10.0);
+        if (FeatureToggle.TWEAK_AFK_TIMEOUT.getBooleanValue()) {
+            if (!mc.isPaused()) {
+                ticksSinceAfk++;
+		        if (!performedAfkAction) {
+		        	if (AFKTime != Configs.Generic.AFK_TIMEOUT.getIntegerValue()) {
+		        		AFKTime = Configs.Generic.AFK_TIMEOUT.getIntegerValue();
+		        		ticksSinceAfk = 0;
+		        	}
+		            int afkTimeout = Configs.Generic.AFK_TIMEOUT.getIntegerValue();
+		            
+		            if (ticksSinceAfk > AFKTime) {
+		                performAfkAction(mc);
+		                performedAfkAction = true;
+		            } else if (ticksSinceAfk > AFKTime - 20*30) {
+		                InfoUtils.printActionbarMessage("tweakeroo.message.afk_detected", Math.ceil((double)(afkTimeout - ticksSinceAfk) / 2.0) / 10.0);
+		            }
+		        }
             }
+        } else {
+        	ticksSinceAfk = 0;
+            performedAfkAction = false;
         }
     }
 
@@ -186,7 +194,14 @@ public class MiscTweaks
             ticksSinceAfk = 0;
             return;
         }
-
+        // Fixes issue where afk timer does not reset in v1.3.0
+        double currentPitch = player.getPitch();
+        double currentYaw = player.getYaw();
+        if ((Math.abs(currentPitch - pitch) > 1) || (Math.abs(currentYaw - yaw) > 1)) {
+        	resetAfkTimer();
+        }
+        pitch = currentPitch;
+        yaw = currentYaw;
         checkAfk(mc);
         doPeriodicClicks(mc);
         
