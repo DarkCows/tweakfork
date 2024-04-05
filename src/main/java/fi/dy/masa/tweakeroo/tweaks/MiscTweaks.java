@@ -48,6 +48,7 @@ public class MiscTweaks
 
     private static int ticksSinceAfk = 0;
     private static boolean performedAfkAction = false;
+    
     private static double pitch = 0;
     private static double yaw = 0;
     private static int AFKTime = -1;
