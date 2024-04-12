@@ -38,8 +38,8 @@ public abstract class MixinInGameHud
         }
     }
 
-    @Inject(method = "renderCrosshair", at = @At(value = "FIELD",
-                target = "Lnet/minecraft/client/option/GameOptions;debugEnabled:Z", ordinal = 0), cancellable = true)
+    @Inject(method = "renderCrosshair", at = @At(value = "INVOKE",
+                target = "Lnet/minecraft/client/gui/hud/DebugHud;shouldShowDebugHud()Z", ordinal = 0), cancellable = true)
     private void overrideCursorRender(CallbackInfo ci)
     {
         if (FeatureToggle.TWEAK_F3_CURSOR.getBooleanValue())
