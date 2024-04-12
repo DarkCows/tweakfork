@@ -26,7 +26,6 @@ import fi.dy.masa.tweakeroo.Reference;
 import fi.dy.masa.tweakeroo.tweaks.MiscTweaks;
 import fi.dy.masa.tweakeroo.tweaks.PlacementTweaks;
 import fi.dy.masa.tweakeroo.tweaks.RenderTweaks;
-import fi.dy.masa.tweakeroo.util.CreativeExtraItems;
 import fi.dy.masa.tweakeroo.util.InventoryUtils;
 import fi.dy.masa.tweakeroo.util.PlacementRestrictionMode;
 import fi.dy.masa.tweakeroo.util.SnapAimMode;
@@ -41,6 +40,7 @@ public class Configs implements IConfigHandler
     public static class Generic
     {
         public static final ConfigInteger       AFTER_CLICKER_CLICK_COUNT           = new ConfigInteger     ("afterClickerClickCount",  1, 1, 32, "The number of right clicks to do per placed block when\ntweakAfterClicker is enabled");
+        public static final ConfigDouble        ANGEL_BLOCK_PLACEMENT_DISTANCE      = new ConfigDouble      ("angelBlockPlacementDistance", 3, 1, 5, "The distance from the player blocks can be placed in\nthe air when tweakAngelBlock is enabled.\n5 is the maximum the server allows.");
         public static final ConfigDouble        BLOCK_REACH_DISTANCE                = new ConfigDouble      ("blockReachDistance", 4.5, 0, 8, "The block reach distance to use if the\noverride tweak is enabled.\nThe maximum the server allows is 8 for placing, 6 for breaking.");
         public static final ConfigOptionList    BLOCK_TYPE_BREAK_RESTRICTION_WARN   = new ConfigOptionList  ("blockTypeBreakRestrictionWarn", MessageOutputType.MESSAGE, "Selects which type of warning message to show (if any)\nwhen the Block Type Break Restriction feature prevents breaking a block");
         public static final ConfigInteger       BREAKING_GRID_SIZE                  = new ConfigInteger     ("breakingGridSize", 3, 1, 1000, "The grid interval size for the grid breaking mode.\nTo quickly adjust the value, scroll while\nholding down the tweak toggle keybind.");
@@ -161,6 +161,7 @@ public class Configs implements IConfigHandler
                 AREA_SELECTION_USE_ALL,
                 RESTRICTION_LAYER_HEIGHT,
                 BLOCK_TYPE_BREAK_RESTRICTION_WARN,
+                ANGEL_BLOCK_PLACEMENT_DISTANCE,
                 BREAKING_RESTRICTION_MODE,
                 ELYTRA_CAMERA_INDICATOR,
                 ENTITY_TYPE_ATTACK_RESTRICTION_WARN,

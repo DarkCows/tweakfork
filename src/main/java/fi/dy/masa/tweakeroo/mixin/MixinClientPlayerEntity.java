@@ -1,6 +1,5 @@
 package fi.dy.masa.tweakeroo.mixin;
 
-import javax.annotation.Nullable;
 import com.mojang.authlib.GameProfile;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +17,6 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.Hand;
 
 import fi.dy.masa.tweakeroo.config.Configs;

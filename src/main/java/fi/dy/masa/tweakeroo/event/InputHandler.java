@@ -12,13 +12,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import fi.dy.masa.malilib.config.options.ConfigDouble;
 import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.hotkeys.IHotkey;
 import fi.dy.masa.malilib.hotkeys.IKeybindManager;
 import fi.dy.masa.malilib.hotkeys.IKeybindProvider;
@@ -28,13 +26,13 @@ import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.KeyCodes;
-import fi.dy.masa.malilib.util.PositionUtils;
 import fi.dy.masa.tweakeroo.Reference;
 import fi.dy.masa.tweakeroo.config.Configs;
 import fi.dy.masa.tweakeroo.config.FeatureToggle;
 import fi.dy.masa.tweakeroo.config.Hotkeys;
 import fi.dy.masa.tweakeroo.util.MiscUtils;
 import fi.dy.masa.tweakeroo.util.SnapAimMode;
+import net.minecraft.world.RaycastContext;
 
 public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IMouseInputHandler
 {
@@ -154,12 +152,20 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     public boolean onMouseClick(int mouseX, int mouseY, int eventButton, boolean eventButtonState)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.world == null || mc.player == null || mc.interactionManager == null || mc.crosshairTarget == null ||
+                GuiUtils.getCurrentScreen() != null)
+        {
+            return false;
+        }
 
         // Note block play key
-        if (GuiUtils.getCurrentScreen() == null && mc.player != null && !mc.player.isSneaking() &&
-            eventButtonState && FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
-            Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 && eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
-            mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+        if (!mc.player.isSneaking() &&
+        		eventButtonState &&
+        		FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() &&
+        		Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
+        		Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 &&
+        		eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
+        		mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
         	BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
             BlockState state = mc.world.getBlockState(hit.getBlockPos());
         	if (state.getBlock() instanceof NoteBlock) {
@@ -171,33 +177,23 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                 }
         	}
         }
-        
-        // Angel Block
-        if (GuiUtils.getCurrentScreen() == null && mc.player != null && mc.player.isCreative() &&
-            eventButtonState && mc.options.useKey.matchesMouse(eventButton) &&
-            FeatureToggle.TWEAK_ANGEL_BLOCK.getBooleanValue() &&
-            mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.MISS)
+
+        if (mc.player.isCreative() && FeatureToggle.TWEAK_ANGEL_BLOCK.getBooleanValue() && eventButtonState &&
+            mc.options.useKey.matchesMouse(eventButton) && mc.crosshairTarget.getType() == HitResult.Type.MISS)
         {
-            BlockPos posFront = PositionUtils.getPositionInfrontOfEntity(mc.player);
+            Vec3d eyePos = mc.player.getEyePos();
+            Vec3d rotVec = mc.player.getRotationVec(1.0f);
 
-            if (mc.world.isAir(posFront))
+            Vec3d vec3d = eyePos.add(rotVec.multiply(Configs.Generic.ANGEL_BLOCK_PLACEMENT_DISTANCE.getDoubleValue()));
+            BlockHitResult context = mc.world.raycast(new RaycastContext(eyePos, vec3d, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.SOURCE_ONLY, mc.player));
+
+            for (Hand hand : Hand.values())
             {
-                Direction facing = PositionUtils.getClosestLookingDirection(mc.player).getOpposite();
-                Vec3d hitVec = PositionUtils.getHitVecCenter(posFront, facing);
-                BlockHitResult context = new BlockHitResult(hitVec, facing, posFront, false);
-                ItemStack stack = mc.player.getMainHandStack();
-
+                ItemStack stack = mc.player.getStackInHand(hand);
                 if (stack.isEmpty() == false && stack.getItem() instanceof BlockItem)
                 {
-                    mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, context);
-                    return true;
-                }
-
-                stack = mc.player.getOffHandStack();
-
-                if (stack.isEmpty() == false && stack.getItem() instanceof BlockItem)
-                {
-                    mc.interactionManager.interactBlock(mc.player, Hand.OFF_HAND, context);
+                    mc.interactionManager.interactBlock(mc.player, hand, context);
+                    mc.player.swingHand(hand);
                     return true;
                 }
             }
@@ -407,8 +403,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
 
     public void handleMovementKeys(Input movement)
     {
-        MinecraftClient mc = MinecraftClient.getInstance();
-        GameOptions settings = mc.options;
+        GameOptions settings = MinecraftClient.getInstance().options;
 
         if (settings.leftKey.isPressed() && settings.rightKey.isPressed())
         {
