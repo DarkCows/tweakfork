@@ -36,6 +36,7 @@
         "MixinCloneCommand",
         "MixinCommandBlockScreen",
         "MixinCreativeInventoryScreen",
+        "MixinDebugHud",
         "MixinDimensionEffects_Nether",
         "MixinEntity",
         "MixinEntityRenderDispatcher",
