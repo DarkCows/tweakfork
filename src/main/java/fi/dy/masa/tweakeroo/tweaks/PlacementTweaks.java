@@ -3,6 +3,9 @@ package fi.dy.masa.tweakeroo.tweaks;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
+
+import fi.dy.masa.malilib.util.restrictions.BlockRestriction;
+import fi.dy.masa.tweakeroo.util.InventoryUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -32,6 +35,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.util.*;
+import fi.dy.masa.malilib.util.PositionUtils;
+import fi.dy.masa.malilib.util.PositionUtils.HitPart;
 import fi.dy.masa.tweakeroo.config.Configs;
 import fi.dy.masa.tweakeroo.config.FeatureToggle;
 import fi.dy.masa.tweakeroo.config.Hotkeys;
@@ -413,17 +418,16 @@ public class PlacementTweaks
         }
 
         //System.out.printf("onProcessRightClickBlock() pos: %s, side: %s, part: %s, hitVec: %s\n", posIn, sideIn, hitPart, hitVec);
-        ActionResult result = tryPlaceBlock(controller, player, world, posIn, sideIn, sideRotated, yaw, hitVec, hand, hitPart, true);
 
         // Store the initial click data for the fast placement mode
-        if (posFirst == null && result == ActionResult.SUCCESS && restricted)
-        {
-            boolean flexible = FeatureToggle.TWEAK_FLEXIBLE_BLOCK_PLACEMENT.getBooleanValue();
-            boolean accurate = FeatureToggle.TWEAK_ACCURATE_BLOCK_PLACEMENT.getBooleanValue();
-            boolean rotation = Hotkeys.FLEXIBLE_BLOCK_PLACEMENT_ROTATION.getKeybind().isKeybindHeld();
-            boolean offset = Hotkeys.FLEXIBLE_BLOCK_PLACEMENT_OFFSET.getKeybind().isKeybindHeld();
-            boolean accurateIn = Hotkeys.ACCURATE_BLOCK_PLACEMENT_IN.getKeybind().isKeybindHeld();
-            boolean accurateReverse = Hotkeys.ACCURATE_BLOCK_PLACEMENT_REVERSE.getKeybind().isKeybindHeld();
+        boolean flexible = FeatureToggle.TWEAK_FLEXIBLE_BLOCK_PLACEMENT.getBooleanValue();
+        boolean accurate = FeatureToggle.TWEAK_ACCURATE_BLOCK_PLACEMENT.getBooleanValue();
+        boolean rotation = Hotkeys.FLEXIBLE_BLOCK_PLACEMENT_ROTATION.getKeybind().isKeybindHeld();
+        boolean offset = Hotkeys.FLEXIBLE_BLOCK_PLACEMENT_OFFSET.getKeybind().isKeybindHeld();
+        boolean adjacent = Hotkeys.FLEXIBLE_BLOCK_PLACEMENT_ADJACENT.getKeybind().isKeybindHeld();
+        boolean hold = Hotkeys.FLEXIBLE_BLOCK_PLACEMENT_HOLD.getKeybind().isKeybindHeld();
+        boolean accurateIn = Hotkeys.ACCURATE_BLOCK_PLACEMENT_IN.getKeybind().isKeybindHeld();
+        boolean accurateReverse = Hotkeys.ACCURATE_BLOCK_PLACEMENT_REVERSE.getKeybind().isKeybindHeld();
 
         if (FeatureToggle.TWEAK_SCAFFOLD_PLACE.getBooleanValue() && (!flexible || (!rotation && !offset && !adjacent && !hold))) {
             ItemStack stack = player.getStackInHand(hand);
@@ -1131,7 +1135,6 @@ public class PlacementTweaks
         sideRotatedFirst = null;
         firstWasRotation = false;
         firstWasOffset = false;
-        isFirstClick = true;
         placementCount = 0;
         stackClickedOn = ItemStack.EMPTY;
         stateClickedOn = null;
