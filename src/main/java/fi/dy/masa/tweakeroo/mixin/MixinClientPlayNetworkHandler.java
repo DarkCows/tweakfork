@@ -58,10 +58,6 @@ public abstract class MixinClientPlayNetworkHandler extends ClientCommonNetworkH
     @Shadow
     private int chunkLoadDistance;
 
-    protected MixinClientPlayNetworkHandler(MinecraftClient client, ClientConnection connection, ClientConnectionState connectionState) {
-        super(client, connection, connectionState);
-    }
-
     @Shadow
     public abstract DynamicRegistryManager.Immutable getRegistryManager();
 

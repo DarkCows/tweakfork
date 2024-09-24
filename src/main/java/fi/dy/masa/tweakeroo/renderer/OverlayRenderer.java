@@ -10,9 +10,9 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.debug.DebugRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.AffineTransformation;
 import net.minecraft.util.math.BlockPos;
+import org.joml.Matrix4fStack;
 
 public class OverlayRenderer
 {
@@ -103,14 +103,14 @@ public class OverlayRenderer
 			double camX = camera.getPos().x;
 			double camY = camera.getPos().y;
 			double camZ = camera.getPos().z;
-            MatrixStack matrixStack = RenderSystem.getModelViewStack();
-			matrixStack.push();
-			matrixStack.translate((float)(x - camX), (float)(y - camY), (float)(z - camZ));
-            matrixStack.multiplyPositionMatrix(new Matrix4f().rotation(camera.getRotation()));
-            matrixStack.scale(FONT_SIZE, -FONT_SIZE, FONT_SIZE);
+            Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
+			matrix4fStack.pushMatrix();
+			matrix4fStack.translate((float)(x - camX), (float)(y - camY), (float)(z - camZ));
+            matrix4fStack.multiplyPositionMatrix(new Matrix4f().rotation(camera.getRotation()));
+            matrix4fStack.scale(FONT_SIZE, -FONT_SIZE, FONT_SIZE);
 			RenderSystem.disableDepthTest();  // visibleThroughObjects
 			RenderSystem.depthMask(true);
-            matrixStack.scale(-1.0F, 1.0F, 1.0F);
+            matrix4fStack.scale(-1.0F, 1.0F, 1.0F);
 			RenderSystem.applyModelViewMatrix();
 
 			VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
@@ -122,7 +122,7 @@ public class OverlayRenderer
 
 			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 			RenderSystem.enableDepthTest();
-			matrixStack.pop();
+			matrix4fStack.popMatrix();
 		}
 	}
 
