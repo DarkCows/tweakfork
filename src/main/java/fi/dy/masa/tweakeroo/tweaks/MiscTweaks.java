@@ -1,12 +1,12 @@
 package fi.dy.masa.tweakeroo.tweaks;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -28,11 +28,7 @@ import fi.dy.masa.malilib.util.MessageOutputType;
 import fi.dy.masa.tweakeroo.Tweakeroo;
 import fi.dy.masa.tweakeroo.config.Configs;
 import fi.dy.masa.tweakeroo.config.FeatureToggle;
-import fi.dy.masa.tweakeroo.util.CameraEntity;
-import fi.dy.masa.tweakeroo.util.EntityRestriction;
-import fi.dy.masa.tweakeroo.util.IMinecraftClientInvoker;
-import fi.dy.masa.tweakeroo.util.InventoryUtils;
-import fi.dy.masa.tweakeroo.util.PotionRestriction;
+import fi.dy.masa.tweakeroo.util.*;
 import net.minecraft.client.gui.screen.MessageScreen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
@@ -48,7 +44,7 @@ public class MiscTweaks
 
     private static int ticksSinceAfk = 0;
     private static boolean performedAfkAction = false;
-    
+
     private static double pitch = 0;
     private static double yaw = 0;
     private static int AFKTime = -1;
@@ -132,7 +128,7 @@ public class MiscTweaks
     public static void disconnectGracefully(MinecraftClient mc) {
         boolean flag = mc.isInSingleplayer();
         boolean flag1 = false; //TODO: Implement isConnectedToRealms()
-        
+
         mc.world.disconnect();
         if (flag) {
             mc.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
@@ -170,7 +166,7 @@ public class MiscTweaks
 		        		ticksSinceAfk = 0;
 		        	}
 		            int afkTimeout = Configs.Generic.AFK_TIMEOUT.getIntegerValue();
-		            
+
 		            if (ticksSinceAfk > AFKTime) {
 		                performAfkAction(mc);
 		                performedAfkAction = true;
@@ -205,7 +201,6 @@ public class MiscTweaks
         yaw = currentYaw;
         checkAfk(mc);
         doPeriodicClicks(mc);
-        
         doPotionWarnings(player);
 
         if (FeatureToggle.TWEAK_REPAIR_MODE.getBooleanValue())
@@ -340,14 +335,13 @@ public class MiscTweaks
     private static boolean potionWarningShouldInclude(StatusEffectInstance effect)
     {
         return effect.isAmbient() == false &&
-               (effect.getEffectType().isBeneficial() ||
+               (effect.getEffectType().value().isBeneficial() ||
                Configs.Generic.POTION_WARNING_BENEFICIAL_ONLY.getBooleanValue() == false) &&
                effect.getDuration() <= Configs.Generic.POTION_WARNING_THRESHOLD.getIntegerValue() &&
-               POTION_RESTRICTION.isAllowed(effect.getEffectType());
+               POTION_RESTRICTION.isAllowed(effect.getEffectType().value());
     }
 
-    @Nullable
-    public static FlatChunkGeneratorLayer[] parseBlockString(String blockString)
+    public static @NotNull List<FlatChunkGeneratorLayer> parseBlockString(String blockString)
     {
         List<FlatChunkGeneratorLayer> list = new ArrayList<>();
         String[] strings = blockString.split(",");
@@ -369,7 +363,7 @@ public class MiscTweaks
             thicknessSum += layer.getThickness();
         }
 
-        return list.toArray(new FlatChunkGeneratorLayer[list.size()]);
+        return list;
     }
 
     @Nullable
@@ -416,10 +410,9 @@ public class MiscTweaks
         }
         else
         {
-            FlatChunkGeneratorLayer layer = new FlatChunkGeneratorLayer(finalThickness, block);
             // FIXME 1.17 is this just not needed anymore?
             //layer.setStartY(startY);
-            return layer;
+            return new FlatChunkGeneratorLayer(finalThickness, block);
         }
     }
 
@@ -428,7 +421,7 @@ public class MiscTweaks
     {
         try
         {
-            Identifier identifier = new Identifier(name);
+            Identifier identifier = Identifier.tryParse(name);
             return Registries.BLOCK.getOrEmpty(identifier).orElse(null);
         }
         catch (Exception e)

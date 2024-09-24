@@ -1,5 +1,7 @@
 package fi.dy.masa.tweakeroo.util;
 
+import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -8,10 +10,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
@@ -27,20 +25,16 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.map.MapState;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.text.*;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Util;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-
 import fi.dy.masa.malilib.gui.GuiBase;
 import fi.dy.masa.malilib.gui.Message;
 import fi.dy.masa.malilib.util.FileUtils;
@@ -72,6 +66,17 @@ public class MiscUtils
     private static double lastRealYaw;
     private static double mouseSensitivity = -1.0F;
     private static boolean zoomActive;
+
+    private static boolean periodicAttackActive;
+    private static boolean periodicUseActive;
+    private static boolean periodicHoldAttackActive;
+    private static boolean periodicHoldUseActive;
+
+    private static PostKeyAction lastZoomValue;
+    private static PostKeyAction lastPeriodicAttackValue;
+    private static PostKeyAction lastPeriodicUseValue;
+    private static PostKeyAction lastPeriodicHoldAttackValue;
+    private static PostKeyAction lastPeriodicHoldUseValue;
 
     public static void handlePlayerDeceleration()
     {
@@ -157,6 +162,7 @@ public class MiscUtils
         if (Configs.Generic.ZOOM_ADJUST_MOUSE_SENSITIVITY.getBooleanValue())
         {
             setMouseSensitivityForZoom();
+            lastZoomValue = new PostKeyAction(Configs.Generic.ZOOM_FOV.getDoubleValue());
         }
 
         zoomActive = true;
@@ -167,6 +173,16 @@ public class MiscUtils
         if (zoomActive)
         {
             resetMouseSensitivityForZoom();
+            if (lastZoomValue.isActive())
+            {
+                if (lastZoomValue.getLastDoubleValue() != Configs.Generic.ZOOM_FOV.getDoubleValue() &&
+                    Configs.Generic.ZOOM_RESET_FOV_ON_ACTIVATE.getBooleanValue())
+                {
+                    Configs.Generic.ZOOM_FOV.setDoubleValue(lastZoomValue.getLastDoubleValue());
+                }
+
+                lastZoomValue.setActionHandled();
+            }
 
             // Refresh the rendered chunks when exiting zoom mode
             MinecraftClient.getInstance().worldRenderer.scheduleTerrainUpdate();
@@ -202,6 +218,126 @@ public class MiscUtils
         {
             MinecraftClient.getInstance().options.getMouseSensitivity().setValue(mouseSensitivity);
             mouseSensitivity = -1.0;
+        }
+    }
+
+    public boolean isPeriodicAttackActive()
+    {
+        return periodicAttackActive;
+    }
+
+    public static void onPeriodicAttackActivated()
+    {
+        lastPeriodicAttackValue = new PostKeyAction(Configs.Generic.PERIODIC_ATTACK_INTERVAL.getIntegerValue());
+        periodicAttackActive = true;
+    }
+
+    public static void onPeriodicAttackDeactivated()
+    {
+        if (periodicAttackActive)
+        {
+            if (lastPeriodicAttackValue.isActive())
+            {
+                if (lastPeriodicAttackValue.getLastIntValue() != Configs.Generic.PERIODIC_ATTACK_INTERVAL.getIntegerValue() &&
+                    Configs.Generic.PERIODIC_ATTACK_RESET_ON_ACTIVATE.getBooleanValue())
+                {
+                    Configs.Generic.PERIODIC_ATTACK_INTERVAL.setIntegerValue(lastPeriodicAttackValue.getLastIntValue());
+                }
+
+                lastPeriodicAttackValue.setActionHandled();
+            }
+
+            periodicAttackActive = false;
+        }
+    }
+
+    public boolean isPeriodicUseActive()
+    {
+        return periodicUseActive;
+    }
+
+    public static void onPeriodicUseActivated()
+    {
+        lastPeriodicUseValue = new PostKeyAction(Configs.Generic.PERIODIC_USE_INTERVAL.getIntegerValue());
+        periodicUseActive = true;
+    }
+
+    public static void onPeriodicUseDeactivated()
+    {
+        if (periodicUseActive)
+        {
+            if (lastPeriodicUseValue.isActive())
+            {
+                if (lastPeriodicUseValue.getLastIntValue() != Configs.Generic.PERIODIC_USE_INTERVAL.getIntegerValue() &&
+                    Configs.Generic.PERIODIC_USE_RESET_ON_ACTIVATE.getBooleanValue())
+                {
+                    Configs.Generic.PERIODIC_USE_INTERVAL.setIntegerValue(lastPeriodicUseValue.getLastIntValue());
+                }
+
+                lastPeriodicUseValue.setActionHandled();
+            }
+
+            periodicUseActive = false;
+        }
+    }
+
+    public boolean isPeriodicHoldAttackActive()
+    {
+        return periodicHoldAttackActive;
+    }
+
+    public static void onPeriodicHoldAttackActivated()
+    {
+        lastPeriodicHoldAttackValue = new PostKeyAction(Configs.Generic.PERIODIC_HOLD_ATTACK_INTERVAL.getIntegerValue());
+        periodicHoldAttackActive = true;
+    }
+
+    public static void onPeriodicHoldAttackDeactivated()
+    {
+        if (periodicHoldAttackActive)
+        {
+            if (lastPeriodicHoldAttackValue.isActive())
+            {
+                if (lastPeriodicHoldAttackValue.getLastIntValue() != Configs.Generic.PERIODIC_HOLD_ATTACK_INTERVAL.getIntegerValue() &&
+                    Configs.Generic.PERIODIC_HOLD_ATTACK_RESET_ON_ACTIVATE.getBooleanValue())
+                {
+                    Configs.Generic.PERIODIC_HOLD_ATTACK_INTERVAL.setIntegerValue(lastPeriodicHoldAttackValue.getLastIntValue());
+                }
+
+                lastPeriodicHoldAttackValue.setActionHandled();
+            }
+
+            periodicHoldAttackActive = false;
+        }
+    }
+
+    public boolean isPeriodicHoldUseActive()
+    {
+        return periodicHoldUseActive;
+    }
+
+    public static void onPeriodicHoldUseActivated()
+    {
+        lastPeriodicHoldUseValue = new PostKeyAction(Configs.Generic.PERIODIC_HOLD_USE_INTERVAL.getIntegerValue());
+        periodicHoldUseActive = true;
+    }
+
+    public static void onPeriodicHoldUseDeactivated()
+    {
+        if (periodicHoldUseActive)
+        {
+            if (lastPeriodicHoldUseValue.isActive())
+            {
+                if (lastPeriodicHoldUseValue.getLastIntValue() != Configs.Generic.PERIODIC_HOLD_USE_INTERVAL.getIntegerValue() &&
+                    Configs.Generic.PERIODIC_HOLD_USE_RESET_ON_ACTIVATE.getBooleanValue())
+                {
+                    Configs.Generic.PERIODIC_HOLD_USE_INTERVAL.setIntegerValue(lastPeriodicHoldUseValue.getLastIntValue());
+                }
+
+                lastPeriodicHoldUseValue.setActionHandled();
+            }
+
+            periodicHoldUseActive = false;
         }
     }
 
@@ -468,11 +604,11 @@ public class MiscUtils
     }
 
     public static Vec3d getEyesPos(PlayerEntity player)
-	{	
+	{
 		return new Vec3d(player.getX(), player.getY() + player.getEyeHeight(player.getPose()), player.getZ());
 	}
     public static BlockPos getPlayerHeadPos(PlayerEntity player)
-	{	
+	{
 		return (player.getPose() == EntityPose.STANDING) ? player.getBlockPos().offset(Direction.UP) : player.getBlockPos();
 	}
     public static boolean isInReach(BlockPos pos, PlayerEntity player, double reach) {
@@ -481,8 +617,8 @@ public class MiscUtils
 		double d1 = playerpos.getY() - ((double)pos.getY() + 0.5D);
 		double d2 = playerpos.getZ() - ((double)pos.getZ() + 0.5D);
         return d*d+d1*d1+d2*d2 <= reach*reach;
-    } 
-	
+    }
+
     public static boolean writeAllMapsAsImages()
     {
         MinecraftClient mc = MinecraftClient.getInstance();
@@ -546,6 +682,58 @@ public class MiscUtils
         catch (Exception e)
         {
             InfoUtils.showGuiOrInGameMessage(Message.MessageType.ERROR, "Failed to write image to file: " + fileOut.getAbsolutePath());
+        }
+    }
+
+    public static class PostKeyAction
+    {
+        private int lastIntValue;
+        private double lastDoubleValue;
+        private long lastActive;
+        private boolean active = false;
+
+        public PostKeyAction(int lastIntValue)
+        {
+            this.lastIntValue = lastIntValue;
+            this.lastDoubleValue = -1;
+            this.lastActive = Util.getMeasuringTimeNano();
+            this.active = true;
+        }
+
+        public PostKeyAction(double lastDoubleValue)
+        {
+            this.lastDoubleValue = lastDoubleValue;
+            this.lastIntValue = -1;
+            this.lastActive = Util.getMeasuringTimeNano();
+            this.active = true;
+        }
+
+        public boolean isActive()
+        {
+            return this.active;
+        }
+
+        public int getLastIntValue()
+        {
+            return this.lastIntValue;
+        }
+
+        public double getLastDoubleValue()
+        {
+            return this.lastDoubleValue;
+        }
+
+        public long getLastActive()
+        {
+            return this.lastActive;
+        }
+
+        public void setActionHandled()
+        {
+            this.lastIntValue = -1;
+            this.lastDoubleValue = -1;
+            this.lastActive = Util.getMeasuringTimeNano();
+            this.active = false;
         }
     }
 }

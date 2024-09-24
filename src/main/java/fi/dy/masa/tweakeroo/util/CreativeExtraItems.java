@@ -1,25 +1,17 @@
 package fi.dy.masa.tweakeroo.util;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.mojang.brigadier.StringReader;
-
-import javax.annotation.Nullable;
-
-import fi.dy.masa.tweakeroo.Tweakeroo;
 import net.minecraft.block.InfestedBlock;
-import net.minecraft.command.argument.ItemStringReader;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.item.*;
 import net.minecraft.text.TextContent;
 import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.collection.DefaultedList;
+import fi.dy.masa.malilib.util.InventoryUtils;
+import fi.dy.masa.tweakeroo.Tweakeroo;
 
 public class CreativeExtraItems
 {
@@ -70,11 +62,11 @@ public class CreativeExtraItems
 
         for (String str : items)
         {
-            ItemStack stack = parseItemFromString(str);
+            ItemStack stack = InventoryUtils.getItemStackFromString(str);
 
-            if (stack.isEmpty() == false)
+            if (stack != null && stack.isEmpty() == false)
             {
-                if (stack.hasNbt())
+                if (stack.getComponents().isEmpty() == false)
                 {
                     ADDED_ITEMS.put(group, stack);
                 }

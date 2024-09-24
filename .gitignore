@@ -12,3 +12,6 @@ run/
 .vscode/
 run
 .vscode
+libs/
+.idea/
+run/

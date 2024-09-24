@@ -1,18 +1,20 @@
 package fi.dy.masa.tweakeroo.mixin;
 
-import net.minecraft.client.gui.screen.world.PresetsScreen;
-import org.spongepowered.asm.mixin.Mixin;
-
-@Mixin(PresetsScreen.class)
+//@Mixin(PresetsScreen.class)
 public abstract class MixinPresetsScreen
 {
     /*
+    @Shadow @Final private static RegistryKey<Biome> BIOME_KEY;
+
+    @Shadow @Final private CustomizeFlatLevelScreen parent;
+
     @Inject(method = "init", at = @At("HEAD"))
     private void addCustomEntries(CallbackInfo ci)
     {
         if (FeatureToggle.TWEAK_CUSTOM_FLAT_PRESETS.getBooleanValue())
         {
             int vanillaEntries = 9;
+
             int toRemove = PRESETS.size() - vanillaEntries;
 
             if (toRemove > 0)
@@ -41,6 +43,18 @@ public abstract class MixinPresetsScreen
 
         if (matcher.matches())
         {
+            // TODO --> I added some code here, and added the IMixinCustomizeFlatLevelScreen
+            GeneratorOptionsHolder generatorOptionsHolder = ((IMixinCustomizeFlatLevelScreen) this.parent).tweakeroo_getCreateWorldParent().getWorldCreator().getGeneratorOptionsHolder();
+            DynamicRegistryManager.Immutable dynamicRegistryManager = generatorOptionsHolder.getCombinedRegistryManager();
+            //FeatureSet featureSet = generatorOptionsHolder.dataConfiguration().enabledFeatures();
+            RegistryWrapper.Impl<Biome> biomeLookup = dynamicRegistryManager.getWrapperOrThrow(RegistryKeys.BIOME);
+            RegistryWrapper.Impl<StructureSet> structureLookup = dynamicRegistryManager.getWrapperOrThrow(RegistryKeys.STRUCTURE_SET);
+            RegistryWrapper.Impl<PlacedFeature> featuresLookup = dynamicRegistryManager.getWrapperOrThrow(RegistryKeys.PLACED_FEATURE);
+            //RegistryWrapper.Impl<Block> blockLookup = dynamicRegistryManager.getWrapperOrThrow(RegistryKeys.BLOCK).withFeatureFilter(featureSet);
+            FlatChunkGeneratorConfig defaultConfig = FlatChunkGeneratorConfig.getDefaultConfig(biomeLookup, structureLookup, featuresLookup);
+            //FlatChunkGeneratorConfig currentConfig = this.parent.getConfig();
+            Optional<RegistryEntry.Reference<Biome>> optBiomeEntry = Optional.empty();
+
             String name = matcher.group("name");
             String blocksString = matcher.group("blocks");
             String biomeName = matcher.group("biome");
@@ -51,7 +65,8 @@ public abstract class MixinPresetsScreen
 
             try
             {
-                biome = RegistryKey.of(Registry.BIOME_KEY, new Identifier(biomeName));
+                optBiomeEntry = dynamicRegistryManager.get(RegistryKeys.BIOME).getEntry(Identifier.ofVanilla(biomeName));
+                biome = optBiomeEntry.flatMap(RegistryEntry.Reference::getKey).orElseThrow();
             }
             catch (Exception ignore) {}
 
@@ -65,7 +80,7 @@ public abstract class MixinPresetsScreen
 
             try
             {
-                item = Registry.ITEM.get(new Identifier(iconItemName));
+                item = Registries.ITEM.get(Identifier.of(iconItemName));
             }
             catch (Exception ignore) {}
 
@@ -75,16 +90,20 @@ public abstract class MixinPresetsScreen
                 return false;
             }
 
-            FlatChunkGeneratorLayer[] layers = MiscTweaks.parseBlockString(blocksString);
+            List<FlatChunkGeneratorLayer> layers = MiscTweaks.parseBlockString(blocksString);
 
             if (layers == null)
             {
                 Tweakeroo.logger.error("Failed to get the layers for the flat world preset");
                 return false;
             }
-            //new PresetsScreen.SuperflatPresetsListWidget.SuperflatPresetEntry(null);
+            FlatChunkGeneratorConfig newConfig = defaultConfig.with(layers, defaultConfig.getStructureOverrides(), optBiomeEntry.orElseThrow());
 
+            //new PresetsScreen.SuperflatPresetsListWidget.SuperflatPresetEntry(null);
             //addPreset(Text.translatable(name), item, biome, ImmutableSet.of(), false, false, layers);
+
+            // TODO --> This might work (Test Me)
+            //this.parent.setConfig(newConfig);
 
             return true;
         }

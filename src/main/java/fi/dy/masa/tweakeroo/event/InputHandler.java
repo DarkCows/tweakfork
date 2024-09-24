@@ -1,7 +1,6 @@
 package fi.dy.masa.tweakeroo.event;
 
 import com.google.common.collect.ImmutableList;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.block.NoteBlock;
 import net.minecraft.client.MinecraftClient;
@@ -15,14 +14,10 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import fi.dy.masa.malilib.config.options.ConfigDouble;
 import fi.dy.masa.malilib.gui.GuiBase;
-import fi.dy.masa.malilib.hotkeys.IHotkey;
-import fi.dy.masa.malilib.hotkeys.IKeybindManager;
-import fi.dy.masa.malilib.hotkeys.IKeybindProvider;
-import fi.dy.masa.malilib.hotkeys.IKeyboardInputHandler;
-import fi.dy.masa.malilib.hotkeys.IMouseInputHandler;
-import fi.dy.masa.malilib.hotkeys.KeyCallbackAdjustable;
+import fi.dy.masa.malilib.hotkeys.*;
 import fi.dy.masa.malilib.util.GuiUtils;
 import fi.dy.masa.malilib.util.InfoUtils;
 import fi.dy.masa.malilib.util.KeyCodes;
@@ -32,7 +27,6 @@ import fi.dy.masa.tweakeroo.config.FeatureToggle;
 import fi.dy.masa.tweakeroo.config.Hotkeys;
 import fi.dy.masa.tweakeroo.util.MiscUtils;
 import fi.dy.masa.tweakeroo.util.SnapAimMode;
-import net.minecraft.world.RaycastContext;
 
 public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IMouseInputHandler
 {
@@ -124,7 +118,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                         }
                     } else if (Configs.Generic.NOTE_EDIT_LETTERS.getBooleanValue() && keyCode >= KeyCodes.KEY_A && keyCode <= KeyCodes.KEY_G) {
                         int target = NOTEMAP[MathHelper.clamp(keyCode - KeyCodes.KEY_A, 0, 6)];
-                        
+
                         if (target >= currentNote) {
                             offset = target - currentNote;
                         } else {
@@ -143,7 +137,7 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                 }
             }
         }
-      
+
 
         return false;
     }
@@ -152,34 +146,34 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     public boolean onMouseClick(int mouseX, int mouseY, int eventButton, boolean eventButtonState)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
+
         if (mc.world == null || mc.player == null || mc.interactionManager == null || mc.crosshairTarget == null ||
-                GuiUtils.getCurrentScreen() != null)
+            GuiUtils.getCurrentScreen() != null)
         {
             return false;
         }
 
-        // Note block play key
         if (!mc.player.isSneaking() &&
-        		eventButtonState &&
-        		FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() &&
-        		Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
-        		Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 &&
-        		eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
-        		mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
-        	BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
+                eventButtonState &&
+                FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() &&
+                Configs.Generic.NOTE_PLAY_KEY.getBooleanValue() &&
+                Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().size() != 0 &&
+                eventButton == 100 + Hotkeys.NOTE_PLAY_KEY.getKeybind().getKeys().get(0) &&
+                mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+            BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
             BlockState state = mc.world.getBlockState(hit.getBlockPos());
-        	if (state.getBlock() instanceof NoteBlock) {
+            if (state.getBlock() instanceof NoteBlock) {
                 int offset = 25;
                 for (int i = 0; i < offset; i++)
                 {
                     BlockHitResult context = new BlockHitResult(new Vec3d(hit.getBlockPos().getX(), hit.getBlockPos().getY(), hit.getBlockPos().getZ()),Direction.NORTH, hit.getBlockPos(), false);
                     mc.interactionManager.interactBlock(mc.player, Hand.MAIN_HAND, context);
                 }
-        	}
+            }
         }
 
         if (mc.player.isCreative() && FeatureToggle.TWEAK_ANGEL_BLOCK.getBooleanValue() && eventButtonState &&
-            mc.options.useKey.matchesMouse(eventButton) && mc.crosshairTarget.getType() == HitResult.Type.MISS)
+                mc.options.useKey.matchesMouse(eventButton) && mc.crosshairTarget.getType() == HitResult.Type.MISS)
         {
             Vec3d eyePos = mc.player.getEyePos();
             Vec3d rotVec = mc.player.getRotationVec(1.0f);
@@ -206,17 +200,17 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
     public boolean onMouseScroll(int mouseX, int mouseY, double dWheel)
     {
     	MinecraftClient mc = MinecraftClient.getInstance();
-    	
+
     	// Not in a GUI
         if (GuiUtils.getCurrentScreen() == null && dWheel != 0)
         {
             String preGreen = GuiBase.TXT_GREEN;
             String rst = GuiBase.TXT_RST;
-            
+
             if (FeatureToggle.TWEAK_NOTEBLOCK_EDIT.getBooleanValue() && Configs.Generic.NOTE_SCROLL.getBooleanValue())
             {
-            	if (mc.world != null && mc.player != null && !mc.player.isSneaking() &&
-            		mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
+                if (mc.world != null && mc.player != null && !mc.player.isSneaking() &&
+                        mc.crosshairTarget != null && mc.crosshairTarget.getType() == HitResult.Type.BLOCK) {
                     BlockHitResult hit = (BlockHitResult)mc.crosshairTarget;
                     BlockState state = mc.world.getBlockState(hit.getBlockPos());
                     if (state.getBlock() instanceof NoteBlock) {
@@ -239,7 +233,6 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
                     }
                 }
             }
-
             else if (FeatureToggle.TWEAK_HOTBAR_SCROLL.getBooleanValue() && Hotkeys.HOTBAR_SCROLL.getKeybind().isKeybindHeld())
             {
                 int currentRow = Configs.Internal.HOTBAR_SCROLL_CURRENT_ROW.getIntegerValue();
@@ -363,6 +356,50 @@ public class InputHandler implements IKeybindProvider, IKeyboardInputHandler, IM
 
                 String strValue = String.format("%s%.1f%s", preGreen, Configs.Generic.ZOOM_FOV.getDoubleValue(), rst);
                 InfoUtils.printActionbarMessage("tweakeroo.message.set_zoom_fov_to", strValue);
+
+                return true;
+            }
+            else if (FeatureToggle.TWEAK_PERIODIC_ATTACK.getKeybind().isKeybindHeld())
+            {
+                int newValue = Configs.Generic.PERIODIC_ATTACK_INTERVAL.getIntegerValue() + (dWheel > 0 ? 1 : -1);
+                Configs.Generic.PERIODIC_ATTACK_INTERVAL.setIntegerValue(newValue);
+                KeyCallbackAdjustable.setValueChanged();
+
+                String strValue = preGreen + Configs.Generic.PERIODIC_ATTACK_INTERVAL.getIntegerValue() + rst;
+                InfoUtils.printActionbarMessage("tweakeroo.message.set_periodic_attack_interval_to", strValue);
+
+                return true;
+            }
+            else if (FeatureToggle.TWEAK_PERIODIC_USE.getKeybind().isKeybindHeld())
+            {
+                int newValue = Configs.Generic.PERIODIC_USE_INTERVAL.getIntegerValue() + (dWheel > 0 ? 1 : -1);
+                Configs.Generic.PERIODIC_USE_INTERVAL.setIntegerValue(newValue);
+                KeyCallbackAdjustable.setValueChanged();
+
+                String strValue = preGreen + Configs.Generic.PERIODIC_USE_INTERVAL.getIntegerValue() + rst;
+                InfoUtils.printActionbarMessage("tweakeroo.message.set_periodic_use_interval_to", strValue);
+
+                return true;
+            }
+            else if (FeatureToggle.TWEAK_PERIODIC_HOLD_ATTACK.getKeybind().isKeybindHeld())
+            {
+                int newValue = Configs.Generic.PERIODIC_HOLD_ATTACK_INTERVAL.getIntegerValue() + (dWheel > 0 ? 1 : -1);
+                Configs.Generic.PERIODIC_HOLD_ATTACK_INTERVAL.setIntegerValue(newValue);
+                KeyCallbackAdjustable.setValueChanged();
+
+                String strValue = preGreen + Configs.Generic.PERIODIC_HOLD_ATTACK_INTERVAL.getIntegerValue() + rst;
+                InfoUtils.printActionbarMessage("tweakeroo.message.set_periodic_hold_attack_interval_to", strValue);
+
+                return true;
+            }
+            else if (FeatureToggle.TWEAK_PERIODIC_HOLD_USE.getKeybind().isKeybindHeld())
+            {
+                int newValue = Configs.Generic.PERIODIC_HOLD_USE_INTERVAL.getIntegerValue() + (dWheel > 0 ? 1 : -1);
+                Configs.Generic.PERIODIC_HOLD_USE_INTERVAL.setIntegerValue(newValue);
+                KeyCallbackAdjustable.setValueChanged();
+
+                String strValue = preGreen + Configs.Generic.PERIODIC_HOLD_USE_INTERVAL.getIntegerValue() + rst;
+                InfoUtils.printActionbarMessage("tweakeroo.message.set_periodic_hold_use_interval_to", strValue);
 
                 return true;
             }

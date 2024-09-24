@@ -1,5 +1,6 @@
 package fi.dy.masa.tweakeroo.renderer;
 
+import java.util.Set;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import fi.dy.masa.malilib.util.Color4f;
@@ -10,9 +11,9 @@ import fi.dy.masa.tweakeroo.util.MiscUtils;
 import fi.dy.masa.tweakeroo.util.RayTraceUtils;
 import fi.dy.masa.tweakeroo.util.SnapAimMode;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-
+import org.joml.Matrix4fStack;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -20,20 +21,24 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat.DrawMode;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
+import net.minecraft.client.render.VertexFormats;import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.AbstractHorseEntity;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -42,10 +47,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-
-import fi.dy.masa.malilib.util.EntityUtils;
-import fi.dy.masa.malilib.util.GuiUtils;
-import fi.dy.masa.tweakeroo.config.Configs;
+import fi.dy.masa.malilib.render.InventoryOverlay;
+import fi.dy.masa.tweakeroo.config.FeatureToggle;
+import fi.dy.masa.tweakeroo.data.ServerDataSyncer;
 import fi.dy.masa.tweakeroo.mixin.IMixinAbstractHorseEntity;
 
 public class RenderUtils
@@ -54,9 +58,13 @@ public class RenderUtils
 
     public static void renderHotbarSwapOverlay(MinecraftClient mc, DrawContext drawContext)
     {
+        if (mc.player == null)
+        {
+            return;
+        }
         PlayerEntity player = mc.player;
 
-        if (player != null && mc.currentScreen == null)
+        if (mc.currentScreen == null)
         {
             final int scaledWidth = GuiUtils.getScaledWindowWidth();
             final int scaledHeight = GuiUtils.getScaledWindowHeight();
@@ -127,6 +135,11 @@ public class RenderUtils
         World world = fi.dy.masa.malilib.util.WorldUtils.getBestWorld(mc);
         Entity cameraEntity = EntityUtils.getCameraEntity();
 
+        if (mc.player == null)
+        {
+            return;
+        }
+
         if (cameraEntity == mc.player && world instanceof ServerWorld)
         {
             // We need to get the player from the server world (if available, ie. in single player),
@@ -148,7 +161,8 @@ public class RenderUtils
         }
 
         Inventory inv = null;
-        ShulkerBoxBlock block = null;
+        ShulkerBoxBlock shulkerBoxBlock = null;
+        //CrafterBlock crafterBlock = null;
         LivingEntity entityLivingBase = null;
 
         if (trace.getType() == HitResult.Type.BLOCK)
@@ -158,14 +172,30 @@ public class RenderUtils
 
             if (blockTmp instanceof ShulkerBoxBlock)
             {
-                block = (ShulkerBoxBlock) blockTmp;
+                shulkerBoxBlock = (ShulkerBoxBlock) blockTmp;
             }
 
             inv = fi.dy.masa.malilib.util.InventoryUtils.getInventory(world, pos);
+
+            if (world.isClient && world.getBlockState(pos).getBlock() instanceof BlockEntityProvider
+                && FeatureToggle.TWEAK_SERVER_DATA_SYNC.getBooleanValue())
+            {
+                inv = ServerDataSyncer.getInstance().getBlockInventory(world, pos);
+            }
         }
         else if (trace.getType() == HitResult.Type.ENTITY)
         {
             Entity entity = ((EntityHitResult) trace).getEntity();
+
+            if (entity.getWorld().isClient &&
+                FeatureToggle.TWEAK_SERVER_DATA_SYNC.getBooleanValue())
+            {
+                Entity serverEntity = ServerDataSyncer.getInstance().getServerEntity(entity);
+                if (serverEntity != null)
+                {
+                    entity = serverEntity;
+                }
+            }
 
             if (entity instanceof LivingEntity)
             {
@@ -186,6 +216,7 @@ public class RenderUtils
             }
         }
 
+        final boolean isWolf = (entityLivingBase instanceof WolfEntity);
         final int xCenter = GuiUtils.getScaledWindowWidth() / 2;
         final int yCenter = GuiUtils.getScaledWindowHeight() / 2;
         int x = xCenter - 52 / 2;
@@ -194,8 +225,8 @@ public class RenderUtils
         if (inv != null && inv.size() > 0)
         {
             final boolean isHorse = (entityLivingBase instanceof AbstractHorseEntity);
-            final int totalSlots = isHorse ? inv.size() - 2 : inv.size();
-            final int firstSlot = isHorse ? 2 : 0;
+            final int totalSlots = isHorse ? inv.size() - 1 : inv.size();
+            final int firstSlot = isHorse ? 1 : 0;
 
             final fi.dy.masa.malilib.render.InventoryOverlay.InventoryRenderType type = (entityLivingBase instanceof VillagerEntity) ? fi.dy.masa.malilib.render.InventoryOverlay.InventoryRenderType.VILLAGER : fi.dy.masa.malilib.render.InventoryOverlay.getInventoryType(inv);
             final fi.dy.masa.malilib.render.InventoryOverlay.InventoryProperties props = fi.dy.masa.malilib.render.InventoryOverlay.getInventoryPropsTemp(type, totalSlots);
@@ -216,12 +247,17 @@ public class RenderUtils
                 yInv = Math.min(yInv, yCenter - 92);
             }
 
-            fi.dy.masa.malilib.render.RenderUtils.setShulkerboxBackgroundTintColor(block, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
+            fi.dy.masa.malilib.render.RenderUtils.setShulkerboxBackgroundTintColor(shulkerBoxBlock, Configs.Generic.SHULKER_DISPLAY_BACKGROUND_COLOR.getBooleanValue());
 
             if (isHorse)
             {
+                Inventory horseInv = new SimpleInventory(2);
+                ItemStack horseArmor = (((AbstractHorseEntity) entityLivingBase).getBodyArmor());
+                horseInv.setStack(0, horseArmor != null && !horseArmor.isEmpty() ? horseArmor : ItemStack.EMPTY);
+                horseInv.setStack(1, inv.getStack(0));
+
                 fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
-                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);
+                fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, horseInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);
                 xInv += 32 + 4;
             }
 
@@ -230,6 +266,31 @@ public class RenderUtils
                 fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, xInv, yInv, props.slotsPerRow, totalSlots, mc);
                 fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, inv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, props.slotsPerRow, firstSlot, totalSlots, mc, drawContext);
             }
+        }
+
+        if (isWolf)
+        {
+            InventoryOverlay.InventoryRenderType type = InventoryOverlay.InventoryRenderType.HORSE;
+            final fi.dy.masa.malilib.render.InventoryOverlay.InventoryProperties props = fi.dy.masa.malilib.render.InventoryOverlay.getInventoryPropsTemp(type, 2);
+            final int rows = (int) Math.ceil((double) 2 / props.slotsPerRow);
+            int xInv;
+            int yInv = yCenter - props.height - 6;
+
+            if (rows > 6)
+            {
+                yInv -= (rows - 6) * 18;
+                y -= (rows - 6) * 18;
+            }
+
+            x = xCenter - 55;
+            xInv = xCenter + 2;
+            yInv = Math.min(yInv, yCenter - 92);
+
+            Inventory wolfInv = new SimpleInventory(2);
+            ItemStack wolfArmor = ((WolfEntity) entityLivingBase).getBodyArmor();
+            wolfInv.setStack(0, wolfArmor != null && !wolfArmor.isEmpty() ? wolfArmor : ItemStack.EMPTY);
+            fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, xInv, yInv, 1, 2, mc);
+            fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, wolfInv, xInv + props.slotOffsetX, yInv + props.slotOffsetY, 1, 0, 2, mc, drawContext);
         }
 
         if (entityLivingBase != null)
@@ -241,6 +302,13 @@ public class RenderUtils
 
     public static void renderPlayerInventoryOverlay(MinecraftClient mc, DrawContext drawContext)
     {
+        if (mc.player == null)
+        {
+            return;
+        }
+
+        Inventory inv = mc.player.getInventory();
+
         int x = GuiUtils.getScaledWindowWidth() / 2 - 176 / 2;
         int y = GuiUtils.getScaledWindowHeight() / 2 + 10;
         int slotOffsetX = 8;
@@ -250,12 +318,18 @@ public class RenderUtils
         fi.dy.masa.malilib.render.RenderUtils.color(1f, 1f, 1f, 1f);
 
         fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryBackground(type, x, y, 9, 27, mc);
-        fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, mc.player.getInventory(), x + slotOffsetX, y + slotOffsetY, 9, 9, 27, mc, drawContext);
+        fi.dy.masa.malilib.render.InventoryOverlay.renderInventoryStacks(type, inv, x + slotOffsetX, y + slotOffsetY, 9, 9, 27, mc, drawContext);
     }
 
     public static void renderHotbarScrollOverlay(MinecraftClient mc, DrawContext drawContext)
     {
+        if (mc.player == null)
+        {
+            return;
+        }
+
         Inventory inv = mc.player.getInventory();
+
         final int xCenter = GuiUtils.getScaledWindowWidth() / 2;
         final int yCenter = GuiUtils.getScaledWindowHeight() / 2;
         final int x = xCenter - 176 / 2;
@@ -280,47 +354,75 @@ public class RenderUtils
     {
         if (entity instanceof LivingEntity living)
         {
-            final int resp = EnchantmentHelper.getRespiration(living);
-            final int aqua = EnchantmentHelper.getEquipmentLevel(Enchantments.AQUA_AFFINITY, living);
-            float fog = originalFog;
+            ItemStack head = living.getEquippedStack(EquipmentSlot.HEAD);
 
-            if (aqua > 0)
+            if (head.isEmpty() == false)
             {
-                fog *= 1.6f;
-            }
+                ItemEnchantmentsComponent enchants = head.getEnchantments();
+                float fog = (originalFog > 1.0f) ? 3.3f : 1.3f;
+                int resp = 0;
+                int aqua = 0;
 
-            if (resp > 0)
-            {
-                fog *= (float) resp * 1.6f;
-            }
+                if (enchants.equals(ItemEnchantmentsComponent.DEFAULT) == false)
+                {
+                    Set<RegistryEntry<Enchantment>> enchantList = enchants.getEnchantments();
 
-            return Math.max(fog, originalFog);
+                    for (RegistryEntry<Enchantment> entry : enchantList)
+                    {
+                        if (entry.matchesKey(Enchantments.AQUA_AFFINITY))
+                        {
+                            aqua = enchants.getLevel(entry);
+                        }
+                        if (entry.matchesKey(Enchantments.RESPIRATION))
+                        {
+                            resp = enchants.getLevel(entry);
+                        }
+                    }
+                }
+
+                if (aqua > 0)
+                {
+                    fog *= 1.6f;
+                }
+
+                if (resp > 0)
+                {
+                    fog *= (float) resp * 1.6f;
+                }
+
+                //Tweakeroo.logger.info("getLavaFogDistance: aqua {} resp {} orig: {} adjusted {}", aqua, resp, originalFog, fog);
+
+                return Math.max(fog, originalFog);
+            }
         }
 
         return originalFog;
     }
 
-    public static void renderDirectionsCursor(float zLevel, float partialTicks)
+    public static void renderDirectionsCursor(DrawContext drawContext)
     {
         MinecraftClient mc = MinecraftClient.getInstance();
 
-        int width = GuiUtils.getScaledWindowWidth();
-        int height = GuiUtils.getScaledWindowHeight();
         Camera camera = mc.gameRenderer.getCamera();
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.push();
-        matrixStack.translate(width / 2.0, height / 2.0, zLevel);
+        float width = (float) drawContext.getScaledWindowWidth() / 2;
+        float height = (float) drawContext.getScaledWindowHeight() / 2;
         float pitch = camera.getPitch();
         float yaw = camera.getYaw();
-        Quaternionf rot = new Quaternionf().rotationXYZ(-pitch * (float) (Math.PI / 180.0), yaw * (float) (Math.PI / 180.0), 0.0F);
-        matrixStack.multiply(rot);
-        //matrixStack.multiply(RotationAxis.NEGATIVE_X.rotationDegrees(camera.getPitch()));
-        //matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(camera.getYaw()));
-        matrixStack.scale(-1.0F, -1.0F, -1.0F);
+
+        RenderSystem.enableBlend();
+        Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
+        matrix4fStack.pushMatrix();
+        matrix4fStack.mul(drawContext.getMatrices().peek().getPositionMatrix());
+        matrix4fStack.translate(width, height, 0.0F);
+        matrix4fStack.rotateX(fi.dy.masa.malilib.render.RenderUtils.matrix4fRotateFix(-pitch));
+        matrix4fStack.rotateY(fi.dy.masa.malilib.render.RenderUtils.matrix4fRotateFix(yaw));
+        matrix4fStack.scale(-1.0F, -1.0F, -1.0F);
+
         RenderSystem.applyModelViewMatrix();
         RenderSystem.renderCrosshair(10);
-        matrixStack.pop();
+        matrix4fStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
+        RenderSystem.disableBlend();
     }
 
     public static void notifyRotationChanged()
@@ -505,20 +607,20 @@ public class RenderUtils
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
         startDrawingLines(buffer);
-       
+
         drawBlockBoundingBoxOutlinesBatchedLines(pos, color, expand, buffer, mc);
 
         tessellator.draw();
     }
-    
+
     static void startDrawingLines(BufferBuilder buffer)
     {
         RenderSystem.setShader(GameRenderer::getPositionColorProgram);
-      
+
         RenderSystem.applyModelViewMatrix();
         buffer.begin(DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR);
     }
-    
+
     public static void drawBlockBoundingBoxOutlinesBatchedLines(BlockPos pos, Color4f color,
             double expand, BufferBuilder buffer, MinecraftClient mc)
     {
@@ -898,6 +1000,6 @@ public class RenderUtils
     }
 
 
-   
-    
+
+
 }
