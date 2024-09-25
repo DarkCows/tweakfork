@@ -1,6 +1,8 @@
 package fi.dy.masa.tweakeroo.renderer;
 
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.util.BufferAllocator;
 import org.joml.Matrix4f;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -106,14 +108,16 @@ public class OverlayRenderer
             Matrix4fStack matrix4fStack = RenderSystem.getModelViewStack();
 			matrix4fStack.pushMatrix();
 			matrix4fStack.translate((float)(x - camX), (float)(y - camY), (float)(z - camZ));
-            matrix4fStack.multiplyPositionMatrix(new Matrix4f().rotation(camera.getRotation()));
+			matrix4fStack.pushMatrix();
+			matrix4fStack.mul(new Matrix4f().rotation(camera.getRotation()));
             matrix4fStack.scale(FONT_SIZE, -FONT_SIZE, FONT_SIZE);
 			RenderSystem.disableDepthTest();  // visibleThroughObjects
 			RenderSystem.depthMask(true);
             matrix4fStack.scale(-1.0F, 1.0F, 1.0F);
 			RenderSystem.applyModelViewMatrix();
 
-			VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+			//todo: 1.21 not sure if this is a fix
+			VertexConsumerProvider.Immediate immediate = VertexConsumerProvider.immediate(new BufferAllocator(RenderLayer.DEFAULT_BUFFER_SIZE));
 			float renderX = -client.textRenderer.getWidth(text) * 0.5F;
 			float renderY = client.textRenderer.getWrappedLinesHeight(text, Integer.MAX_VALUE) * (-0.5F + 1.25F * line);
 			Matrix4f matrix4f = AffineTransformation.identity().getMatrix();

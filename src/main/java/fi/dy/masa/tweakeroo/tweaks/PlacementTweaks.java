@@ -487,9 +487,13 @@ public class PlacementTweaks
             return null;
         }
 
-        Block itemBlock = ((BlockItem)stack.getItem()).getBlock();
+        Block itemBlock = ((BlockItem) stack.getItem()).getBlock();
         MinecraftClient mc = MinecraftClient.getInstance();
-        double reach = mc.interactionManager.getReachDistance();
+        double reach = 4.5;
+        if (mc.player != null && mc.player.isCreative())
+        {
+            reach = 5.0;
+        }
 
         BlockPos.Mutable tempPos = new BlockPos.Mutable(pos.getX(),pos.getY(),pos.getZ());
         for (int i = 0; i < Configs.Generic.SCAFFOLD_PLACE_DISTANCE.getIntegerValue(); i++) {

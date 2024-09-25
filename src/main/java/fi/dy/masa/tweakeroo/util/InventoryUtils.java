@@ -1378,38 +1378,4 @@ public class InventoryUtils
             }
         }
     }
-
-    public static boolean cleanUpShulkerBoxNBT(ItemStack stack)
-    {
-        boolean changed = false;
-        NbtCompound nbt = stack.getNbt();
-
-        if (nbt != null)
-        {
-            if (nbt.contains("BlockEntityTag", Constants.NBT.TAG_COMPOUND))
-            {
-                NbtCompound tag = nbt.getCompound("BlockEntityTag");
-
-                if (tag.contains("Items", Constants.NBT.TAG_LIST) &&
-                    tag.getList("Items", Constants.NBT.TAG_COMPOUND).size() == 0)
-                {
-                    tag.remove("Items");
-                    changed = true;
-                }
-
-                if (tag.isEmpty())
-                {
-                    nbt.remove("BlockEntityTag");
-                }
-            }
-
-            if (nbt.isEmpty())
-            {
-                stack.setNbt(null);
-                changed = true;
-            }
-        }
-
-        return changed;
-    }
 }

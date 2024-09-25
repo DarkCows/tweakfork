@@ -163,6 +163,14 @@ public enum FeatureToggle implements IHotkeyTogglable, IConfigNotifiable<IConfig
                 translatedName);
     }
 
+    FeatureToggle(String name, boolean defaultValue, boolean singlePlayer, String defaultHotkey, String comment, String prettyName, String translatedName)
+    {
+        this(name, defaultValue, singlePlayer, defaultHotkey, KeybindSettings.DEFAULT,
+                comment,
+                prettyName,
+                translatedName);
+    }
+
     // Backwards Compatible constructors - START
     FeatureToggle(String name, boolean defaultValue, String defaultHotkey, String comment)
     {

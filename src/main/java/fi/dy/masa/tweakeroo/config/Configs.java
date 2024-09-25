@@ -256,7 +256,6 @@ public class Configs implements IConfigHandler
     {
         public static final ConfigBoolean CHEST_MIRROR_FIX                  = new ConfigBoolean("chestMirrorFix", false, "tweakeroo.config.fixes.comment.chestMirrorFix").translatedName("tweakeroo.config.fixes.name.chestMirrorFix");
         public static final ConfigBoolean ELYTRA_FIX                        = new ConfigBoolean("elytraFix", false, "tweakeroo.config.fixes.comment.elytraFix").translatedName("tweakeroo.config.fixes.name.elytraFix");
-        public static final ConfigBoolean LAVA_DESTROY_FIX                  = new ConfigBoolean("lavaDestroyFix", false, "tweakeroo.config.fixes.comment.lavaDestroyFix").translatedName("tweakeroo.config.fixes.name.lavaDestroyFix");
         public static final ConfigBoolean MAC_HORIZONTAL_SCROLL             = new ConfigBoolean("macHorizontalScroll", false, "tweakeroo.config.fixes.comment.macHorizontalScroll").translatedName("tweakeroo.config.fixes.name.macHorizontalScroll");
         public static final ConfigBoolean RAVAGER_CLIENT_BLOCK_BREAK_FIX    = new ConfigBoolean("ravagerClientBlockBreakFix", false, "tweakeroo.config.fixes.comment.ravagerClientBlockBreakFix").translatedName("tweakeroo.config.fixes.name.ravagerClientBlockBreakFix");
 
@@ -264,8 +263,7 @@ public class Configs implements IConfigHandler
                 ELYTRA_FIX,
                 MAC_HORIZONTAL_SCROLL,
                 RAVAGER_CLIENT_BLOCK_BREAK_FIX,
-                CHEST_MIRROR_FIX,
-                LAVA_DESTROY_FIX
+                CHEST_MIRROR_FIX
         );
     }
 
@@ -526,12 +524,6 @@ public class Configs implements IConfigHandler
                 Lists.FAST_RIGHT_CLICK_BLOCK_BLACKLIST.getStrings(),
                 Lists.FAST_RIGHT_CLICK_BLOCK_WHITELIST.getStrings());
 
-
-        PlacementTweaks.BLOCK_TYPE_RCLICK_RESTRICTION.setListType((ListType) Lists.BLOCK_TYPE_RCLICK_RESTRICTION_MODE.getOptionListValue());
-        PlacementTweaks.BLOCK_TYPE_RCLICK_RESTRICTION.setListContents(
-                Lists.BLOCK_TYPE_RCLICK_BLACKLIST.getStrings(),
-                Lists.BLOCK_TYPE_RCLICK_WHITELIST.getStrings());
-
         PlacementTweaks.FAST_RIGHT_CLICK_ITEM_RESTRICTION.setListType((ListType) Lists.FAST_RIGHT_CLICK_ITEM_LIST_TYPE.getOptionListValue());
         PlacementTweaks.FAST_RIGHT_CLICK_ITEM_RESTRICTION.setListContents(
                 Lists.FAST_RIGHT_CLICK_ITEM_BLACKLIST.getStrings(),
@@ -551,7 +543,6 @@ public class Configs implements IConfigHandler
         MiscTweaks.POTION_RESTRICTION.setListContents(
                 Lists.POTION_WARNING_BLACKLIST.getStrings(),
                 Lists.POTION_WARNING_WHITELIST.getStrings());
-        RenderTweaks.rebuildLists();
 
         MiscTweaks.ENTITY_TYPE_ATTACK_RESTRICTION.setListType((ListType) Lists.ENTITY_TYPE_ATTACK_RESTRICTION_LIST_TYPE.getOptionListValue());
         MiscTweaks.ENTITY_TYPE_ATTACK_RESTRICTION.setListContents(

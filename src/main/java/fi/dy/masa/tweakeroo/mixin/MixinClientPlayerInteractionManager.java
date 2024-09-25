@@ -1,5 +1,6 @@
 package fi.dy.masa.tweakeroo.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -168,20 +169,6 @@ public abstract class MixinClientPlayerInteractionManager
         else
         {
             InventoryUtils.trySwapCurrentToolIfNearlyBroken();
-        }
-    }
-
-    @Inject(method = "getReachDistance", at = @At("HEAD"), cancellable = true)
-    private void overrideReachDistance(CallbackInfoReturnable<Float> cir) {
-        if (FeatureToggle.TWEAK_BLOCK_REACH_OVERRIDE.getBooleanValue()) {
-            cir.setReturnValue((float) Configs.Generic.BLOCK_REACH_DISTANCE.getDoubleValue());
-        }
-    }
-
-    @Inject(method = "hasExtendedReach", at = @At("HEAD"), cancellable = true)
-    private void overrideExtendedReach(CallbackInfoReturnable<Boolean> cir) {
-        if (FeatureToggle.TWEAK_BLOCK_REACH_OVERRIDE.getBooleanValue()) {
-            cir.setReturnValue(false);
         }
     }
 

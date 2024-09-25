@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import com.google.common.collect.ArrayListMultimap;
-import com.mojang.brigadier.StringReader;
 import net.minecraft.block.InfestedBlock;
 import net.minecraft.item.*;
 import net.minecraft.text.TextContent;
@@ -40,7 +39,7 @@ public class CreativeExtraItems
             TextContent content = group.getDisplayName().getContent();
 
             if (content instanceof TranslatableTextContent translatableTextContent &&
-                translatableTextContent.getKey().equals("itemGroup.op"))
+                    translatableTextContent.getKey().equals("itemGroup.op"))
             {
                 setCreativeExtraItems(group, items);
                 break;
@@ -78,31 +77,9 @@ public class CreativeExtraItems
         }
     }
 
-    public static ItemStack parseItemFromString(String str)
-    {
-        try
-        {
-            ItemStringReader.ItemResult itemResult = ItemStringReader.item(Registries.ITEM.getReadOnlyWrapper(), new StringReader(str));
-            Item item = itemResult.item().value();
-
-            if (item != null)
-            {
-                ItemStack stack = new ItemStack(item);
-                stack.setNbt(itemResult.nbt());
-                return stack;
-            }
-        }
-        catch (Exception e)
-        {
-            Tweakeroo.logger.warn("Invalid item '{}'", str);
-        }
-
-        return ItemStack.EMPTY;
-    }
-
     public static void removeInfestedBlocks(DefaultedList<ItemStack> stacks)
     {
         stacks.removeIf((stack) -> stack.getItem() instanceof BlockItem &&
-                                   ((BlockItem) stack.getItem()).getBlock() instanceof InfestedBlock);
+                ((BlockItem) stack.getItem()).getBlock() instanceof InfestedBlock);
     }
 }

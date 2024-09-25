@@ -144,6 +144,10 @@ public class RenderTweaks {
     public static void scanContainersNearby() {
 
         MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player == null)
+        {
+            return;
+        }
         if (mc.player.isSneaking())
             return;
         long now = System.currentTimeMillis();
@@ -155,7 +159,7 @@ public class RenderTweaks {
 
             onDesync();
         }
-        int reach = Math.min((int) mc.interactionManager.getReachDistance(), 6);
+        int reach = Math.min((int) mc.player.getBlockInteractionRange(), 6);
         BlockPos.Mutable tempPos = new BlockPos.Mutable();
         BlockPos playerPos = MiscUtils.getPlayerHeadPos(mc.player);
         CURRENT_CONTAINER = 0;
@@ -191,7 +195,7 @@ public class RenderTweaks {
                         boolean flag;
                         if (lv1.getAnimationStage() == ShulkerBoxBlockEntity.AnimationStage.CLOSED) {
                             flag = mc.world.isSpaceEmpty(ShulkerEntity
-                                    .calculateBoundingBox((Direction) state.get(ShulkerBoxBlock.FACING), 0.0F, 0.5F)
+                                    .calculateBoundingBox(1F, state.get(ShulkerBoxBlock.FACING), 0.0F, 0.5F)
                                     .offset(tempPos).contract(1.0E-6D));
                         } else {
                             flag = true;
@@ -399,7 +403,7 @@ public class RenderTweaks {
             BlockPos pos = BlockPos.fromLong(entry.getKey());
             RenderUtils.renderBlockOutline(pos, expand, 8, colorSearch,
                     mc);
-            RenderUtils.renderAreaSides(pos, pos, colorSearch, matrices, mc);
+            RenderUtils.renderAreaSides(pos, pos, colorSearch, mc);
         }
 
     }
@@ -541,13 +545,13 @@ public class RenderTweaks {
             if (pos1.equals(pos2) == false) {
                 RenderUtils.renderAreaOutlineNoCorners(pos1, pos2, lineWidthArea, colorX, colorY, colorZ, mc);
 
-                RenderUtils.renderAreaSides(pos1, pos2, sideColor, matrices, mc);
+                RenderUtils.renderAreaSides(pos1, pos2, sideColor, mc);
 
                 RenderUtils.renderBlockOutline(pos1, expand, lineWidthBlockBox, colorPos1, mc);
                 RenderUtils.renderBlockOutline(pos2, expand, lineWidthBlockBox, colorPos2, mc);
             } else {
                 RenderUtils.renderBlockOutlineOverlapping(pos1, expand, lineWidthBlockBox, colorPos1, colorPos2,
-                        colorOverlapping, matrices, mc);
+                        colorOverlapping, mc);
             }
         } else {
             if (pos1 != null) {
@@ -1184,7 +1188,7 @@ public class RenderTweaks {
 
         endframebuffer.setClearColor(0, 0, 0, 1);
         endframebuffer.clear(false);
-        RenderSystem.assertOnGameThreadOrInit();
+        RenderSystem.assertOnRenderThreadOrInit();
         GlStateManager._viewport(x, y, width, height);
 
         Matrix4f matrix4f = new Matrix4f().setOrtho(0.0f, width, height, 0.0f, 1000.0f, 3000.0f);
@@ -1193,13 +1197,11 @@ public class RenderTweaks {
         float g = (float) height;
         float h = (float) endframebuffer.viewportWidth / (float) endframebuffer.textureWidth;
         float i = (float) endframebuffer.viewportHeight / (float) endframebuffer.textureHeight;
-        Tessellator tessellator = RenderSystem.renderThreadTesselator();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(0.0D, (double) g, 0.0D).texture(0.0F, 0.0F).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex((double) f, (double) g, 0.0D).texture(h, 0.0F).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex((double) f, 0.0D, 0.0D).texture(h, i).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(0.0D, 0.0D, 0.0D).texture(0.0F, i).color(255, 255, 255, 255).next();
+        BufferBuilder bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.vertex(0.0F, g, 0.0F).texture(0.0F, 0.0F).color(255, 255, 255, 255);
+        bufferBuilder.vertex(f, g, 0.0F).texture(h, 0.0F).color(255, 255, 255, 255);
+        bufferBuilder.vertex(f, 0.0F, 0.0F).texture(h, i).color(255, 255, 255, 255);
+        bufferBuilder.vertex(0.0F, 0.0F, 0.0F).texture(0.0F, i).color(255, 255, 255, 255);
         BufferRenderer.draw(bufferBuilder.end());
     }
 }

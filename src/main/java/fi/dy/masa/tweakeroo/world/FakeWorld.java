@@ -45,7 +45,7 @@ import net.minecraft.world.event.GameEvent.Emitter;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import net.minecraft.world.tick.TickManager;
 
-public class FakeWorld extends World
+public abstract class FakeWorld extends World
 {
     private static final RegistryKey<World> REGISTRY_KEY = RegistryKey.of(RegistryKeys.WORLD, new Identifier(Reference.MOD_ID, "selective_world"));
     private static final ClientWorld.Properties LEVEL_INFO = new ClientWorld.Properties(Difficulty.PEACEFUL, false, true);
